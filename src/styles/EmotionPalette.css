@@ -1,0 +1,80 @@
+.emotion-palette {
+  padding: 0.75rem 0.5rem;
+  border-top: 1px solid var(--color-border);
+  background: linear-gradient(180deg, var(--color-bg-card), var(--color-bg));
+}
+
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 6px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.emotion-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 52px;
+}
+
+.emotion-btn:active:not(:disabled) {
+  transform: scale(0.92);
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--emotion-color);
+}
+
+.emotion-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.emotion-btn-recent {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: var(--emotion-color);
+}
+
+.emotion-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 8px rgba(var(--emotion-color), 0.3);
+}
+
+.emotion-btn:active:not(:disabled) .emotion-dot {
+  transform: scale(1.2);
+  box-shadow: 0 0 16px var(--emotion-color);
+}
+
+.emotion-label {
+  font-size: 0.6rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 768px) {
+  .palette-grid {
+    grid-template-columns: repeat(7, 1fr);
+  }
+}
+
+@media (max-width: 380px) {
+  .palette-grid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  }
+  .emotion-label {
+    font-size: 0.55rem;
+  }
+}

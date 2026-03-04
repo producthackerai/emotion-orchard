@@ -1,0 +1,123 @@
+.tree-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.tree-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--color-border);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.tree-info-left {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tree-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: default;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tree-name-edit {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-accent);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-family: var(--font-display);
+  outline: none;
+  width: 160px;
+}
+
+.tree-date {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.tree-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.tree-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tree-action-btn:active {
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+}
+
+.tree-menu {
+  position: absolute;
+  top: 100%;
+  right: 12px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 4px;
+  z-index: 10;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  animation: fadeInUp 0.15s ease;
+}
+
+.tree-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-body);
+  font-size: 0.8rem;
+  font-family: var(--font-display);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tree-menu button:active {
+  background: var(--color-bg-alt);
+}
+
+.tree-menu-danger {
+  color: var(--color-danger) !important;
+}
+
+.tree-full-msg {
+  text-align: center;
+  padding: 8px;
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  animation: gentlePulse 3s ease-in-out infinite;
+}

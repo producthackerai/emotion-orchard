@@ -1,0 +1,58 @@
+.tree-canvas-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tree-canvas-svg {
+  width: 100%;
+  height: 100%;
+  max-height: 55vh;
+  filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.3));
+}
+
+.tree-trunk {
+  filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.4));
+}
+
+.tree-branches {
+  animation: treeSway 8s ease-in-out infinite;
+  transform-origin: 200px 460px;
+}
+
+.tree-leaves {
+  animation: treeSway 8s ease-in-out infinite;
+  transform-origin: 200px 460px;
+  animation-delay: -0.5s;
+}
+
+.leaf-existing {
+  animation: leafSway 4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.leaf-new {
+  animation: leafGrow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+             leafSway 4s ease-in-out 0.6s infinite;
+  transform-origin: center;
+  filter: url(#leafGlow);
+}
+
+.firefly {
+  animation: float 3s ease-in-out infinite, gentlePulse 2s ease-in-out infinite;
+}
+
+.tree-leaf-count {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.05em;
+}

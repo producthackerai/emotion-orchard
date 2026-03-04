@@ -1,0 +1,168 @@
+.orchard-view {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  padding-bottom: calc(1rem + var(--safe-bottom));
+}
+
+.orchard-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.orchard-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+.orchard-subtitle {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.orchard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.new-tree-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 1.25rem;
+  border: 2px dashed var(--color-border);
+  border-radius: 16px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 140px;
+}
+
+.new-tree-card:active {
+  border-color: var(--color-accent);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.new-tree-gratitude:active {
+  border-color: #FFB7C5;
+  background: rgba(255, 183, 197, 0.05);
+}
+
+.new-tree-icon {
+  color: var(--color-text-muted);
+  transition: color 0.2s ease;
+}
+
+.new-tree-card:active .new-tree-icon {
+  color: var(--color-accent);
+}
+
+.new-tree-gratitude:active .new-tree-icon {
+  color: #FFB7C5;
+}
+
+.new-tree-label {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.orchard-tree-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-bg-card);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 140px;
+}
+
+.orchard-tree-card:active {
+  border-color: var(--color-border-hover);
+  transform: scale(0.97);
+}
+
+.mini-tree-container {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mini-tree-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.mini-tree-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+}
+
+.mini-tree-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.mini-tree-meta {
+  font-size: 0.6rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+}
+
+.mini-tree-date {
+  font-size: 0.55rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+}
+
+.orchard-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  animation: fadeInUp 0.5s ease;
+}
+
+.orchard-empty-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 8px;
+}
+
+.orchard-empty-text {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+@media (min-width: 600px) {
+  .orchard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

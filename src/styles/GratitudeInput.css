@@ -1,0 +1,92 @@
+.gratitude-input {
+  padding: 0.75rem;
+  border-top: 1px solid var(--color-border);
+  background: linear-gradient(180deg, var(--color-bg-card), var(--color-bg));
+}
+
+.gratitude-fields {
+  max-width: 400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gratitude-person-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 0 12px;
+}
+
+.gratitude-icon {
+  color: #FFB7C5;
+  flex-shrink: 0;
+}
+
+.gratitude-name-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 10px 0;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  outline: none;
+}
+
+.gratitude-name-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.gratitude-note-input {
+  width: 100%;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  color: var(--color-text-body);
+  font-family: var(--font-display);
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.gratitude-note-input:focus {
+  border-color: rgba(255, 183, 197, 0.4);
+}
+
+.gratitude-note-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.gratitude-submit {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  margin: 8px auto 0;
+  padding: 10px;
+  background: rgba(255, 183, 197, 0.15);
+  border: 1px solid rgba(255, 183, 197, 0.3);
+  border-radius: 12px;
+  color: #FFB7C5;
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gratitude-submit:active:not(:disabled) {
+  transform: scale(0.98);
+  background: rgba(255, 183, 197, 0.25);
+}
+
+.gratitude-submit:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
