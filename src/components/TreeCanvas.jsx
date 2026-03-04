@@ -1,258 +1,261 @@
 import { useMemo } from 'react'
 import '../styles/TreeCanvas.css'
 
-// Seeded random for consistent tree shapes
 function seededRandom(seed) {
   let x = Math.sin(seed * 9301 + 49297) * 233280
   return x - Math.floor(x)
 }
 
-// Generate the tree structure from a seed
-function generateTreeStructure(seed) {
-  const s = (offset) => seededRandom(seed + offset)
-
-  // Trunk control points
-  const trunkSway = (s(1) - 0.5) * 15
-  const trunk = {
-    start: { x: 200, y: 460 },
-    cp1: { x: 200 + trunkSway * 0.3, y: 380 },
-    cp2: { x: 200 - trunkSway * 0.5, y: 280 },
-    end: { x: 200 + trunkSway * 0.2, y: 170 },
-  }
-
-  // Generate branches
-  const branches = []
-  const numBranches = 6 + Math.floor(s(2) * 2) // 6-7
-
-  for (let i = 0; i < numBranches; i++) {
-    const t = 0.22 + (i / numBranches) * 0.6 // position along trunk (22% - 82%)
-    const side = i % 2 === 0 ? -1 : 1
-
-    // Point on trunk at parameter t
-    const tt = t
-    const mt = 1 - tt
-    const startX = mt*mt*mt * trunk.start.x + 3*mt*mt*tt * trunk.cp1.x + 3*mt*tt*tt * trunk.cp2.x + tt*tt*tt * trunk.end.x
-    const startY = mt*mt*mt * trunk.start.y + 3*mt*mt*tt * trunk.cp1.y + 3*mt*tt*tt * trunk.cp2.y + tt*tt*tt * trunk.end.y
-
-    const angle = (35 + s(10 + i) * 35) * side // 35-70 degrees
-    const length = 50 + s(20 + i) * 70 // 50-120px
-    const rad = ((90 - angle) * Math.PI) / 180
-
-    const endX = startX + Math.cos(rad) * length * (side === -1 ? -1 : 1)
-    const endY = startY - Math.sin(rad) * length * 0.6
-
-    const cpX = startX + (endX - startX) * 0.5 + s(30 + i) * 15 * side
-    const cpY = startY + (endY - startY) * 0.4 - s(40 + i) * 20
-
-    // Sub-branch
-    const subT = 0.5 + s(50 + i) * 0.3
-    const subStartX = startX + (endX - startX) * subT
-    const subStartY = startY + (endY - startY) * subT
-    const subAngle = angle * 0.7 + s(60 + i) * 20
-    const subLength = length * (0.3 + s(70 + i) * 0.3)
-    const subRad = ((90 - subAngle) * Math.PI) / 180
-    const subEndX = subStartX + Math.cos(subRad) * subLength * (side === -1 ? -1 : 1)
-    const subEndY = subStartY - Math.sin(subRad) * subLength * 0.5
-
-    branches.push({
-      path: `M ${startX} ${startY} Q ${cpX} ${cpY} ${endX} ${endY}`,
-      end: { x: endX, y: endY },
-      thickness: 3 + (1 - t) * 4, // thicker near base
-      subBranch: {
-        path: `M ${subStartX} ${subStartY} Q ${(subStartX + subEndX) / 2} ${subStartY + (subEndY - subStartY) * 0.3} ${subEndX} ${subEndY}`,
-        end: { x: subEndX, y: subEndY },
-        thickness: 1.5 + (1 - t) * 2,
-      },
-    })
-  }
-
-  // Generate leaf anchor positions (along branches and sub-branches)
-  const leafPositions = []
-  branches.forEach((branch, bi) => {
-    // 2-3 positions per branch
-    for (let j = 0; j < 3; j++) {
-      const t = 0.4 + j * 0.25 + s(100 + bi * 10 + j) * 0.1
-      const bStartX = parseFloat(branch.path.match(/M ([\d.]+)/)?.[1] || 0)
-      const bStartY = parseFloat(branch.path.match(/M [\d.]+ ([\d.]+)/)?.[1] || 0)
-      const x = bStartX + (branch.end.x - bStartX) * t + (s(200 + bi * 10 + j) - 0.5) * 10
-      const y = bStartY + (branch.end.y - bStartY) * t + (s(300 + bi * 10 + j) - 0.5) * 8
-
-      leafPositions.push({
-        x, y,
-        rotation: (s(400 + bi * 10 + j) - 0.5) * 60,
-        scale: 0.8 + s(500 + bi * 10 + j) * 0.4,
-      })
-    }
-
-    // 1-2 on sub-branch
-    for (let j = 0; j < 2; j++) {
-      const t = 0.5 + j * 0.3
-      const subStart = branch.subBranch.path.match(/M ([\d.]+) ([\d.]+)/)
-      const sx = parseFloat(subStart?.[1] || 0)
-      const sy = parseFloat(subStart?.[2] || 0)
-      const x = sx + (branch.subBranch.end.x - sx) * t + (s(600 + bi * 10 + j) - 0.5) * 8
-      const y = sy + (branch.subBranch.end.y - sy) * t + (s(700 + bi * 10 + j) - 0.5) * 6
-
-      leafPositions.push({
-        x, y,
-        rotation: (s(800 + bi * 10 + j) - 0.5) * 50,
-        scale: 0.7 + s(900 + bi * 10 + j) * 0.3,
-      })
-    }
-  })
-
-  // Top crown positions
-  const crownCenterX = trunk.end.x
-  const crownCenterY = trunk.end.y - 10
-  for (let i = 0; i < 5; i++) {
-    const angle = (i / 5) * Math.PI * 2 + s(1000 + i)
-    const dist = 15 + s(1100 + i) * 25
-    leafPositions.push({
-      x: crownCenterX + Math.cos(angle) * dist,
-      y: crownCenterY + Math.sin(angle) * dist * 0.6 - 10,
-      rotation: (s(1200 + i) - 0.5) * 40,
-      scale: 0.85 + s(1300 + i) * 0.3,
-    })
-  }
-
-  return { trunk, branches, leafPositions }
+// Quadratic bezier point at parameter t
+function quadAt(p0, p1, p2, t) {
+  const mt = 1 - t
+  return mt * mt * p0 + 2 * mt * t * p1 + t * t * p2
 }
 
-// Leaf SVG shape
+function generateTree(seed) {
+  const s = (n) => seededRandom(seed + n)
+
+  // Trunk — gentle curve, wider at base
+  const trunkSway = (s(1) - 0.5) * 12
+  const trunk = {
+    x1: 200, y1: 465,
+    cx: 200 + trunkSway, cy: 320,
+    x2: 200 + trunkSway * 0.3, y2: 155,
+  }
+
+  // Root flare points
+  const roots = [
+    { x: trunk.x1 - 18, y: trunk.y1 + 5, cx: trunk.x1 - 35, cy: trunk.y1 - 15 },
+    { x: trunk.x1 + 18, y: trunk.y1 + 5, cx: trunk.x1 + 35, cy: trunk.y1 - 15 },
+  ]
+
+  // Branches — stored as numeric data, NOT svg strings
+  const branches = []
+  const numBranches = 8
+
+  for (let i = 0; i < numBranches; i++) {
+    const t = 0.2 + (i / numBranches) * 0.65
+    const side = i % 2 === 0 ? -1 : 1
+
+    // Start point on trunk
+    const sx = quadAt(trunk.x1, trunk.cx, trunk.x2, t)
+    const sy = quadAt(trunk.y1, trunk.cy, trunk.y2, t)
+
+    // Branch spreads outward and slightly up
+    const angleDeg = 20 + s(10 + i) * 40 // 20-60 degrees from horizontal
+    const length = 55 + s(20 + i) * 75 + (1 - t) * 20 // longer near bottom
+    const rad = angleDeg * Math.PI / 180
+
+    const ex = sx + side * Math.cos(rad) * length
+    const ey = sy - Math.sin(rad) * length
+
+    // Control point — slight upward curve
+    const cx = sx + side * Math.cos(rad) * length * 0.5 + (s(30 + i) - 0.5) * 15
+    const cy = sy - Math.sin(rad) * length * 0.6 - s(40 + i) * 15
+
+    const thickness = 2.5 + (1 - t) * 4
+
+    // Sub-branch from ~60% along main branch
+    const subT = 0.5 + s(50 + i) * 0.2
+    const subSx = quadAt(sx, cx, ex, subT)
+    const subSy = quadAt(sy, cy, ey, subT)
+    const subAngle = (15 + s(60 + i) * 30) * Math.PI / 180
+    const subLen = length * (0.3 + s(70 + i) * 0.25)
+    const subEx = subSx + side * Math.cos(subAngle) * subLen
+    const subEy = subSy - Math.sin(subAngle) * subLen
+    const subCx = (subSx + subEx) / 2 + (s(80 + i) - 0.5) * 10
+    const subCy = (subSy + subEy) / 2 - s(90 + i) * 12
+
+    branches.push({
+      sx, sy, cx, cy, ex, ey, thickness, side,
+      sub: { sx: subSx, sy: subSy, cx: subCx, cy: subCy, ex: subEx, ey: subEy, thickness: thickness * 0.5 },
+    })
+  }
+
+  // Leaf positions — computed directly from branch math
+  const leafPositions = []
+
+  for (let bi = 0; bi < branches.length; bi++) {
+    const b = branches[bi]
+    // 3 positions along main branch (50%, 70%, 95%)
+    for (const t of [0.5, 0.7, 0.95]) {
+      const jx = (s(200 + bi * 20 + t * 100) - 0.5) * 12
+      const jy = (s(300 + bi * 20 + t * 100) - 0.5) * 10
+      leafPositions.push({
+        x: quadAt(b.sx, b.cx, b.ex, t) + jx,
+        y: quadAt(b.sy, b.cy, b.ey, t) + jy,
+        rotation: (s(400 + bi * 10 + t * 50) - 0.5) * 70,
+        scale: 0.9 + s(500 + bi * 10 + t * 50) * 0.4,
+      })
+    }
+    // 2 positions on sub-branch
+    for (const t of [0.55, 0.9]) {
+      const jx = (s(600 + bi * 20 + t * 100) - 0.5) * 10
+      const jy = (s(700 + bi * 20 + t * 100) - 0.5) * 8
+      leafPositions.push({
+        x: quadAt(b.sub.sx, b.sub.cx, b.sub.ex, t) + jx,
+        y: quadAt(b.sub.sy, b.sub.cy, b.sub.ey, t) + jy,
+        rotation: (s(800 + bi * 10 + t * 50) - 0.5) * 60,
+        scale: 0.8 + s(900 + bi * 10 + t * 50) * 0.35,
+      })
+    }
+  }
+
+  // Crown cluster — leaves near the top of the tree
+  const crownX = trunk.x2
+  const crownY = trunk.y2
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2 + s(1000 + i) * 0.5
+    const r = 18 + s(1100 + i) * 30
+    leafPositions.push({
+      x: crownX + Math.cos(a) * r,
+      y: crownY - 5 + Math.sin(a) * r * 0.5 - 8,
+      rotation: (s(1200 + i) - 0.5) * 50,
+      scale: 0.85 + s(1300 + i) * 0.35,
+    })
+  }
+
+  return { trunk, roots, branches, leafPositions }
+}
+
 function LeafShape({ x, y, color, rotation, scale, index, isNew, type = 'leaf' }) {
-  const animDelay = isNew ? 0 : index * 0.05
+  const animDelay = isNew ? 0 : index * 0.04
+
+  // IMPORTANT: Outer <g> handles positioning via SVG transform attribute.
+  // Inner <g> handles CSS animation. They MUST be separate because CSS
+  // animation transform overrides SVG transform attributes.
 
   if (type === 'blossom') {
     return (
-      <g
-        transform={`translate(${x}, ${y}) rotate(${rotation}) scale(${scale})`}
-        className={isNew ? 'leaf-new' : 'leaf-existing'}
-        style={{ animationDelay: `${animDelay}s` }}
-      >
-        {[0, 72, 144, 216, 288].map((angle, i) => (
-          <ellipse
-            key={i}
-            cx={0}
-            cy={-5}
-            rx={3.5}
-            ry={6}
-            fill={color}
-            opacity={0.85}
-            transform={`rotate(${angle})`}
-          />
-        ))}
-        <circle cx={0} cy={0} r={2.5} fill="#FFE4B5" opacity={0.9} />
+      <g transform={`translate(${x}, ${y}) rotate(${rotation}) scale(${scale})`}>
+        <g
+          className={isNew ? 'leaf-new' : 'leaf-existing'}
+          style={{ animationDelay: `${animDelay}s` }}
+        >
+          {[0, 72, 144, 216, 288].map((angle, i) => (
+            <ellipse key={i} cx={0} cy={-6} rx={4} ry={7} fill={color} opacity={0.8} transform={`rotate(${angle})`} />
+          ))}
+          <circle cx={0} cy={0} r={3} fill="#FFE4B5" opacity={0.9} />
+        </g>
       </g>
     )
   }
 
   return (
-    <g
-      transform={`translate(${x}, ${y}) rotate(${rotation}) scale(${scale})`}
-      className={isNew ? 'leaf-new' : 'leaf-existing'}
-      style={{ animationDelay: `${animDelay}s` }}
-    >
-      <path
-        d="M0,-9 C3.5,-7.5 5.5,-3 5.5,0 C5.5,3.5 3.5,7.5 0,9.5 C-3.5,7.5 -5.5,3.5 -5.5,0 C-5.5,-3 -3.5,-7.5 0,-9Z"
-        fill={color}
-        opacity={0.88}
-      />
-      {/* Leaf vein */}
-      <line x1={0} y1={-6} x2={0} y2={7} stroke={color} strokeWidth={0.5} opacity={0.4} />
-      <line x1={0} y1={-2} x2={3} y2={-5} stroke={color} strokeWidth={0.3} opacity={0.3} />
-      <line x1={0} y1={1} x2={-3} y2={-2} stroke={color} strokeWidth={0.3} opacity={0.3} />
+    <g transform={`translate(${x}, ${y}) rotate(${rotation}) scale(${scale})`}>
+      <g
+        className={isNew ? 'leaf-new' : 'leaf-existing'}
+        style={{ animationDelay: `${animDelay}s` }}
+      >
+        <path
+          d="M0,-10 C4,-8 7,-3 7,0 C7,4 4,9 0,11 C-4,9 -7,4 -7,0 C-7,-3 -4,-8 0,-10Z"
+          fill={color}
+          opacity={0.88}
+        />
+        <path
+          d="M0,-7 Q1,0 0,8 M0,-2 Q3,-4 5,-6 M0,2 Q-3,0 -5,-2"
+          stroke="rgba(255,255,255,0.15)"
+          strokeWidth={0.6}
+          fill="none"
+        />
+      </g>
     </g>
   )
 }
 
 export default function TreeCanvas({ leaves = [], treeType = 'emotion', treeSeed = 12345, newLeafId = null }) {
-  const tree = useMemo(() => generateTreeStructure(treeSeed), [treeSeed])
+  const tree = useMemo(() => generateTree(treeSeed), [treeSeed])
 
-  // Map leaves to positions
   const positionedLeaves = leaves.map((leaf, i) => {
     const pos = tree.leafPositions[i % tree.leafPositions.length]
-    // Add slight offset for leaves sharing positions
-    const offset = Math.floor(i / tree.leafPositions.length)
+    const cycle = Math.floor(i / tree.leafPositions.length)
     return {
       ...leaf,
-      x: pos.x + offset * 5,
-      y: pos.y + offset * 3,
-      rotation: pos.rotation + offset * 15,
-      scale: pos.scale * (1 - offset * 0.1),
+      x: pos.x + cycle * (seededRandom(i * 7) - 0.5) * 16,
+      y: pos.y + cycle * (seededRandom(i * 13) - 0.5) * 12,
+      rotation: pos.rotation + cycle * 20,
+      scale: pos.scale * Math.max(0.7, 1 - cycle * 0.15),
     }
   })
 
   return (
     <div className="tree-canvas-container">
-      <svg
-        viewBox="0 0 400 500"
-        className="tree-canvas-svg"
-        preserveAspectRatio="xMidYMax meet"
-      >
+      <svg viewBox="0 0 400 500" className="tree-canvas-svg" preserveAspectRatio="xMidYMax meet">
         <defs>
-          {/* Trunk gradient */}
           <linearGradient id="trunkGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#5C3A1E" />
-            <stop offset="30%" stopColor="#8B5E3C" />
-            <stop offset="70%" stopColor="#8B5E3C" />
-            <stop offset="100%" stopColor="#6B4226" />
+            <stop offset="0%" stopColor="#4A2E14" />
+            <stop offset="25%" stopColor="#7A5230" />
+            <stop offset="50%" stopColor="#9B6B3C" />
+            <stop offset="75%" stopColor="#7A5230" />
+            <stop offset="100%" stopColor="#4A2E14" />
           </linearGradient>
-
-          {/* Ground gradient */}
-          <radialGradient id="groundGrad" cx="50%" cy="0%" r="60%">
-            <stop offset="0%" stopColor="#1a3a1a" stopOpacity="0.6" />
+          <radialGradient id="groundGrad" cx="50%" cy="0%" r="55%">
+            <stop offset="0%" stopColor="#1a3a1a" stopOpacity="0.5" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
-
-          {/* Glow filter for new leaves */}
+          <radialGradient id="canopyGlow" cx="50%" cy="55%" r="50%">
+            <stop offset="0%" stopColor="#2a4a2a" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="transparent" />
+          </radialGradient>
           <filter id="leafGlow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="3" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
 
-        {/* Background ambient */}
-        <rect width="400" height="500" fill="transparent" />
+        {/* Canopy glow behind leaves */}
+        {leaves.length > 3 && (
+          <ellipse cx={tree.trunk.x2} cy={tree.trunk.y2 + 40} rx={120 + leaves.length * 2} ry={90 + leaves.length} fill="url(#canopyGlow)" />
+        )}
 
         {/* Ground */}
-        <ellipse cx="200" cy="470" rx="160" ry="20" fill="url(#groundGrad)" />
+        <ellipse cx="200" cy="475" rx="150" ry="18" fill="url(#groundGrad)" />
+
+        {/* Root flare */}
+        {tree.roots.map((root, i) => (
+          <path
+            key={i}
+            d={`M ${tree.trunk.x1} ${tree.trunk.y1} Q ${root.cx} ${root.cy} ${root.x} ${root.y}`}
+            stroke="url(#trunkGrad)"
+            strokeWidth={6}
+            strokeLinecap="round"
+            fill="none"
+          />
+        ))}
 
         {/* Trunk */}
         <path
-          d={`M ${tree.trunk.start.x} ${tree.trunk.start.y} C ${tree.trunk.cp1.x} ${tree.trunk.cp1.y} ${tree.trunk.cp2.x} ${tree.trunk.cp2.y} ${tree.trunk.end.x} ${tree.trunk.end.y}`}
+          d={`M ${tree.trunk.x1} ${tree.trunk.y1} Q ${tree.trunk.cx} ${tree.trunk.cy} ${tree.trunk.x2} ${tree.trunk.y2}`}
           stroke="url(#trunkGrad)"
-          strokeWidth="14"
+          strokeWidth={16}
           strokeLinecap="round"
           fill="none"
           className="tree-trunk"
         />
-        {/* Trunk highlight */}
+        {/* Trunk bark highlight */}
         <path
-          d={`M ${tree.trunk.start.x + 2} ${tree.trunk.start.y} C ${tree.trunk.cp1.x + 2} ${tree.trunk.cp1.y} ${tree.trunk.cp2.x + 1} ${tree.trunk.cp2.y} ${tree.trunk.end.x + 1} ${tree.trunk.end.y}`}
-          stroke="rgba(255,255,255,0.06)"
-          strokeWidth="4"
+          d={`M ${tree.trunk.x1 + 3} ${tree.trunk.y1} Q ${tree.trunk.cx + 3} ${tree.trunk.cy} ${tree.trunk.x2 + 2} ${tree.trunk.y2}`}
+          stroke="rgba(255,255,255,0.05)"
+          strokeWidth={3}
           strokeLinecap="round"
           fill="none"
         />
 
         {/* Branches */}
         <g className="tree-branches">
-          {tree.branches.map((branch, i) => (
+          {tree.branches.map((b, i) => (
             <g key={i}>
               <path
-                d={branch.path}
-                stroke="#7A5230"
-                strokeWidth={branch.thickness}
+                d={`M ${b.sx} ${b.sy} Q ${b.cx} ${b.cy} ${b.ex} ${b.ey}`}
+                stroke="#6B4226"
+                strokeWidth={b.thickness}
                 strokeLinecap="round"
                 fill="none"
               />
               <path
-                d={branch.subBranch.path}
-                stroke="#8B6340"
-                strokeWidth={branch.subBranch.thickness}
+                d={`M ${b.sub.sx} ${b.sub.sy} Q ${b.sub.cx} ${b.sub.cy} ${b.sub.ex} ${b.sub.ey}`}
+                stroke="#7A5230"
+                strokeWidth={b.sub.thickness}
                 strokeLinecap="round"
                 fill="none"
               />
@@ -277,29 +280,26 @@ export default function TreeCanvas({ leaves = [], treeType = 'emotion', treeSeed
           ))}
         </g>
 
-        {/* Fireflies / ambient particles when tree has leaves */}
+        {/* Fireflies */}
         {leaves.length > 5 && (
           <g className="ambient-particles">
-            {[...Array(3)].map((_, i) => (
+            {[...Array(4)].map((_, i) => (
               <circle
                 key={i}
-                cx={100 + i * 100 + Math.sin(i * 2) * 30}
-                cy={150 + i * 60}
+                cx={80 + i * 80 + Math.sin(i * 3) * 40}
+                cy={120 + i * 50 + Math.cos(i * 2) * 30}
                 r={1.5}
                 fill="#f59e0b"
-                opacity={0.3}
+                opacity={0.25}
                 className="firefly"
-                style={{ animationDelay: `${i * 1.5}s` }}
+                style={{ animationDelay: `${i * 1.3}s` }}
               />
             ))}
           </g>
         )}
       </svg>
 
-      {/* Leaf count */}
-      <div className="tree-leaf-count">
-        {leaves.length} / 30
-      </div>
+      <div className="tree-leaf-count">{leaves.length} / 30</div>
     </div>
   )
 }

@@ -20,6 +20,8 @@
   filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.4));
 }
 
+/* Whole-tree sway — applied to branch/leaf GROUPS, not individual items.
+   These groups don't have their own SVG transform attributes so CSS is safe. */
 .tree-branches {
   animation: treeSway 8s ease-in-out infinite;
   transform-origin: 200px 460px;
@@ -31,15 +33,17 @@
   animation-delay: -0.5s;
 }
 
+/* Individual leaf animations — these run on the INNER <g> which has NO
+   SVG transform attribute, so CSS transform won't clobber positioning. */
 .leaf-existing {
   animation: leafSway 4s ease-in-out infinite;
-  transform-origin: center;
+  transform-origin: 0px 0px;
 }
 
 .leaf-new {
   animation: leafGrow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
              leafSway 4s ease-in-out 0.6s infinite;
-  transform-origin: center;
+  transform-origin: 0px 0px;
   filter: url(#leafGlow);
 }
 
