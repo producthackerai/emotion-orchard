@@ -89,3 +89,56 @@
   color: var(--color-text-muted);
   letter-spacing: 0.05em;
 }
+
+/* Leaf detail tooltip */
+.leaf-tooltip {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 7px 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  width: max-content;
+  max-width: 160px;
+}
+
+.leaf-tooltip-dot {
+  width: 10px;
+  height: 10px;
+  min-width: 10px;
+  border-radius: 50%;
+  margin-top: 2px;
+}
+
+.leaf-tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.leaf-tooltip-emotion {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.leaf-tooltip-person {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  line-height: 1.2;
+}
+
+.leaf-tooltip-note {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import '../styles/TreeCanvas.css'
 
 function seededRandom(seed) {
@@ -36,21 +36,20 @@ function generateTree(seed) {
     { x1: cx, y1: 460, cx: cx + 13, cy: 466, x2: cx + 26, y2: 476 },
   ]
 
-  // Hand-crafted branches — tips form oval canopy like a clock face
   const v = (n) => (s(n) - 0.5) * 5
 
   const defs = [
-    { sy: 388, ex: 78,  ey: 288, cx: 128, cy: 368, t: 4.5 },  // 7 o'clock
-    { sy: 356, ex: 55,  ey: 235, cx: 108, cy: 322, t: 4.0 },  // 8 o'clock
-    { sy: 325, ex: 52,  ey: 185, cx: 112, cy: 278, t: 3.5 },  // 9 o'clock
-    { sy: 295, ex: 68,  ey: 128, cx: 122, cy: 236, t: 3.0 },  // 10 o'clock
-    { sy: 266, ex: 115, ey: 78,  cx: 155, cy: 192, t: 2.7 },  // 11 o'clock
-    { sy: 388, ex: 322, ey: 288, cx: 272, cy: 368, t: 4.5 },  // 5 o'clock
-    { sy: 356, ex: 345, ey: 235, cx: 292, cy: 322, t: 4.0 },  // 4 o'clock
-    { sy: 325, ex: 348, ey: 185, cx: 288, cy: 278, t: 3.5 },  // 3 o'clock
-    { sy: 295, ex: 332, ey: 128, cx: 278, cy: 236, t: 3.0 },  // 2 o'clock
-    { sy: 266, ex: 285, ey: 78,  cx: 245, cy: 192, t: 2.7 },  // 1 o'clock
-    { sy: 242, ex: 200, ey: 62,  cx: 200, cy: 158, t: 2.5 },  // 12 o'clock
+    { sy: 388, ex: 78,  ey: 288, cx: 128, cy: 368, t: 4.5 },
+    { sy: 356, ex: 55,  ey: 235, cx: 108, cy: 322, t: 4.0 },
+    { sy: 325, ex: 52,  ey: 185, cx: 112, cy: 278, t: 3.5 },
+    { sy: 295, ex: 68,  ey: 128, cx: 122, cy: 236, t: 3.0 },
+    { sy: 266, ex: 115, ey: 78,  cx: 155, cy: 192, t: 2.7 },
+    { sy: 388, ex: 322, ey: 288, cx: 272, cy: 368, t: 4.5 },
+    { sy: 356, ex: 345, ey: 235, cx: 292, cy: 322, t: 4.0 },
+    { sy: 325, ex: 348, ey: 185, cx: 288, cy: 278, t: 3.5 },
+    { sy: 295, ex: 332, ey: 128, cx: 278, cy: 236, t: 3.0 },
+    { sy: 266, ex: 285, ey: 78,  cx: 245, cy: 192, t: 2.7 },
+    { sy: 242, ex: 200, ey: 62,  cx: 200, cy: 158, t: 2.5 },
   ]
 
   const branches = defs.map((b, i) => ({
@@ -63,7 +62,6 @@ function generateTree(seed) {
     thickness: b.t,
   }))
 
-  // 60 leaf positions — 30 base foliage + 30 emotion slots
   const leafPositions = computeLeafPositions(cx, branches, seed)
   return { trunk, roots, branches, leafPositions }
 }
@@ -96,12 +94,9 @@ function computeLeafPositions(cx, branches, seed) {
     positions.push(pos)
   }
 
-  // Layer 1: near each branch tip (11)
   branches.forEach((b, i) => {
     addPos(b.ex + (s(100+i)-0.5)*14, b.ey + (s(200+i)-0.5)*10, 300+i*10)
   })
-
-  // Layer 2: at 60% along each branch (11, total 22)
   branches.forEach((b, i) => {
     addPos(
       quadAt(b.sx, b.cx, b.ex, 0.6) + (s(400+i)-0.5)*16,
@@ -109,8 +104,6 @@ function computeLeafPositions(cx, branches, seed) {
       600+i*10,
     )
   })
-
-  // Layer 3: at 35% along each branch (11, total 33)
   branches.forEach((b, i) => {
     addPos(
       quadAt(b.sx, b.cx, b.ex, 0.35) + (s(700+i)-0.5)*20,
@@ -118,8 +111,6 @@ function computeLeafPositions(cx, branches, seed) {
       770+i*10,
     )
   })
-
-  // Layer 4: at 80% along each branch (11, total 44)
   branches.forEach((b, i) => {
     addPos(
       quadAt(b.sx, b.cx, b.ex, 0.82) + (s(850+i)-0.5)*15,
@@ -128,7 +119,6 @@ function computeLeafPositions(cx, branches, seed) {
     )
   })
 
-  // Layer 5: golden-angle spiral to fill gaps (16 more → 60 total)
   const canopyCy = 185
   const remaining = 60 - positions.length
   const goldenAngle = Math.PI * (3 - Math.sqrt(5))
@@ -154,7 +144,7 @@ function seededShuffle(arr, seed) {
   return result
 }
 
-// ── Leaf / Blossom shapes (bigger for lush canopy) ──
+// ── Leaf / Blossom shapes ──
 
 function LeafShape({ x, y, color, rotation, scale, index, isNew, isScattering, type = 'leaf', isBase = false }) {
   const cls = isScattering ? 'leaf-scatter' : isNew ? 'leaf-new' : 'leaf-existing'
@@ -199,8 +189,8 @@ export default function TreeCanvas({
   newLeafId = null, positionSeed = 0, isScattering = false,
 }) {
   const tree = useMemo(() => generateTree(treeSeed), [treeSeed])
+  const [selectedIdx, setSelectedIdx] = useState(null)
 
-  // Base foliage: always 30 dark green leaves in positions 0-29 (shuffled on rearrange)
   const baseLeaves = useMemo(() => {
     const baseSlots = tree.leafPositions.slice(0, 30)
     const indices = positionSeed > 0
@@ -218,7 +208,6 @@ export default function TreeCanvas({
     })
   }, [tree.leafPositions, positionSeed])
 
-  // Emotion leaves: user-added, use positions 30-59
   const positionedLeaves = useMemo(() => {
     const emotionSlots = tree.leafPositions.slice(30, 60)
     const indices = positionSeed > 0
@@ -232,9 +221,24 @@ export default function TreeCanvas({
     })
   }, [leaves, tree.leafPositions, positionSeed])
 
+  const selected = selectedIdx !== null ? positionedLeaves[selectedIdx] : null
+
+  // Tooltip position — above the leaf, clamped inside viewBox
+  let tipX = 0, tipY = 0
+  if (selected) {
+    tipX = Math.max(5, Math.min(selected.x - 80, 235))
+    tipY = selected.y - 55
+    if (tipY < 5) tipY = selected.y + 25
+  }
+
   return (
     <div className="tree-canvas-container">
-      <svg viewBox="0 0 400 480" className="tree-canvas-svg" preserveAspectRatio="xMidYMid meet">
+      <svg
+        viewBox="0 0 400 480"
+        className="tree-canvas-svg"
+        preserveAspectRatio="xMidYMid meet"
+        onClick={() => setSelectedIdx(null)}
+      >
         <defs>
           <linearGradient id="trunkGrad" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="#4A2E14" />
@@ -257,7 +261,7 @@ export default function TreeCanvas({
           </filter>
         </defs>
 
-        {/* Canopy glow — always visible since base leaves are always there */}
+        {/* Canopy glow */}
         <ellipse cx={200} cy={185} rx={155 + leaves.length * 1.2} ry={135 + leaves.length * 0.8} fill="url(#canopyGlow)" />
 
         {/* Ground shadow */}
@@ -289,7 +293,7 @@ export default function TreeCanvas({
           ))}
         </g>
 
-        {/* Base foliage — 30 dark green leaves, always present */}
+        {/* Base foliage */}
         <g className="tree-leaves-base">
           {baseLeaves.map((leaf, i) => (
             <LeafShape key={`base-${i}`}
@@ -301,15 +305,23 @@ export default function TreeCanvas({
           ))}
         </g>
 
-        {/* Emotion leaves — user-added, colorful, on top */}
+        {/* Emotion leaves — tappable */}
         <g className="tree-leaves">
           {positionedLeaves.map((leaf, i) => (
-            <LeafShape key={leaf.id || i}
-              x={leaf.x} y={leaf.y} color={leaf.color}
-              rotation={leaf.rotation} scale={leaf.scale} index={i}
-              isNew={leaf.id === newLeafId} isScattering={isScattering}
-              type={treeType === 'gratitude' ? 'blossom' : 'leaf'}
-            />
+            <g key={leaf.id || i}>
+              <LeafShape
+                x={leaf.x} y={leaf.y} color={leaf.color}
+                rotation={leaf.rotation} scale={leaf.scale} index={i}
+                isNew={leaf.id === newLeafId} isScattering={isScattering}
+                type={treeType === 'gratitude' ? 'blossom' : 'leaf'}
+              />
+              {/* Invisible tap target */}
+              <circle
+                cx={leaf.x} cy={leaf.y} r={16} fill="transparent"
+                style={{ cursor: 'pointer' }}
+                onClick={(e) => { e.stopPropagation(); setSelectedIdx(i === selectedIdx ? null : i) }}
+              />
+            </g>
           ))}
         </g>
 
@@ -322,6 +334,29 @@ export default function TreeCanvas({
                 style={{ animationDelay: `${i * 1.5}s` }} />
             ))}
           </g>
+        )}
+
+        {/* Leaf detail tooltip */}
+        {selected && (
+          <foreignObject
+            x={tipX} y={tipY} width={160} height={50}
+            style={{ overflow: 'visible', pointerEvents: 'none' }}
+          >
+            <div className="leaf-tooltip">
+              <div className="leaf-tooltip-dot" style={{ background: selected.color }} />
+              <div className="leaf-tooltip-body">
+                {selected.emotion && (
+                  <span className="leaf-tooltip-emotion">{selected.emotion}</span>
+                )}
+                {selected.person_name && (
+                  <span className="leaf-tooltip-person">To {selected.person_name}</span>
+                )}
+                {selected.note && (
+                  <span className="leaf-tooltip-note">{selected.note}</span>
+                )}
+              </div>
+            </div>
+          </foreignObject>
         )}
       </svg>
 
