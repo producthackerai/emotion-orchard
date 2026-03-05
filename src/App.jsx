@@ -228,6 +228,7 @@ export default function App() {
           <OrchardView
             trees={trees}
             treeLeaveCounts={treeLeaveCounts}
+            allLeaves={allLeaves}
             onSelectTree={handleSelectTree}
             onCreateTree={handleCreateTree}
           />

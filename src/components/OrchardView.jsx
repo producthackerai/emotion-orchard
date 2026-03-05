@@ -1,33 +1,95 @@
-import { Plus, TreePine, Flower2 } from 'lucide-react'
+import { useMemo } from 'react'
 import '../styles/OrchardView.css'
 
-function MiniTree({ tree, leafCount, onClick }) {
-  // Generate tiny SVG preview
+function seededRandom(seed) {
+  let x = Math.sin(seed * 9301 + 49297) * 233280
+  return x - Math.floor(x)
+}
+
+const BASE_GREENS = [
+  '#1a4a1a', '#1f5220', '#245a26', '#1d4d1d', '#22552a',
+  '#2a5e2a', '#1b4e1f', '#205524', '#264f26', '#1e5222',
+  '#2d6030', '#1a4420', '#234e28', '#1c5025', '#265830',
+]
+
+function generateMiniPositions(seed, total) {
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5))
+  const positions = []
+  for (let i = 0; i < total; i++) {
+    const angle = i * goldenAngle + seededRandom(seed + i * 7) * 0.4
+    const r = 3 + (i / Math.max(total, 1)) * 17 + seededRandom(seed + i * 13) * 3
+    positions.push({
+      x: 40 + Math.cos(angle) * r,
+      y: 38 + Math.sin(angle) * r * 0.72,
+    })
+  }
+  return positions
+}
+
+function MiniTreeSvg({ seed, leafCount, leaves = [], type = 'emotion' }) {
+  const total = 30 + leafCount
+
+  const positions = useMemo(
+    () => generateMiniPositions(seed, total),
+    [seed, total],
+  )
+
+  return (
+    <svg viewBox="0 0 80 95" className="mini-tree-svg">
+      {/* Ground */}
+      <ellipse cx="40" cy="90" rx="14" ry="3" fill="var(--color-grass)" opacity="0.3" />
+
+      {/* Trunk */}
+      <line x1="40" y1="88" x2="40" y2="44" stroke="#8B5E3C" strokeWidth="2.5" strokeLinecap="round" />
+
+      {/* Branches */}
+      <line x1="40" y1="76" x2="18" y2="60" stroke="#7A5230" strokeWidth="1.6" strokeLinecap="round" />
+      <line x1="40" y1="76" x2="62" y2="60" stroke="#7A5230" strokeWidth="1.6" strokeLinecap="round" />
+      <line x1="40" y1="66" x2="15" y2="44" stroke="#7A5230" strokeWidth="1.4" strokeLinecap="round" />
+      <line x1="40" y1="66" x2="65" y2="44" stroke="#7A5230" strokeWidth="1.4" strokeLinecap="round" />
+      <line x1="40" y1="57" x2="22" y2="32" stroke="#7A5230" strokeWidth="1.1" strokeLinecap="round" />
+      <line x1="40" y1="57" x2="58" y2="32" stroke="#7A5230" strokeWidth="1.1" strokeLinecap="round" />
+      <line x1="40" y1="50" x2="32" y2="24" stroke="#7A5230" strokeWidth="0.9" strokeLinecap="round" />
+      <line x1="40" y1="50" x2="48" y2="24" stroke="#7A5230" strokeWidth="0.9" strokeLinecap="round" />
+      <line x1="40" y1="44" x2="40" y2="20" stroke="#7A5230" strokeWidth="0.8" strokeLinecap="round" />
+
+      {/* Leaf dots */}
+      {positions.map((pos, i) => {
+        let color
+        if (i < 30) {
+          color = BASE_GREENS[i % BASE_GREENS.length]
+        } else {
+          const li = i - 30
+          if (leaves[li]?.color) {
+            color = leaves[li].color
+          } else if (type === 'gratitude') {
+            color = `hsl(${340 + seededRandom(seed + i) * 30}, 80%, 78%)`
+          } else {
+            color = `hsl(${seededRandom(seed + i * 37) * 360}, 70%, 55%)`
+          }
+        }
+        return (
+          <circle key={i} cx={pos.x} cy={pos.y} r={2.3}
+            fill={color} opacity={i < 30 ? 0.6 : 0.88}
+          />
+        )
+      })}
+    </svg>
+  )
+}
+
+function MiniTree({ tree, leafCount, leaves, onClick }) {
   const seed = tree.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
-  const fullness = leafCount / 30
 
   return (
     <button className="orchard-tree-card" onClick={() => onClick(tree)}>
       <div className="mini-tree-container">
-        <svg viewBox="0 0 80 100" className="mini-tree-svg">
-          {/* Simple trunk */}
-          <line x1="40" y1="90" x2="40" y2="45" stroke="#8B5E3C" strokeWidth="3" strokeLinecap="round" />
-          {/* Simple branches */}
-          <line x1="40" y1="60" x2="25" y2="48" stroke="#7A5230" strokeWidth="2" strokeLinecap="round" />
-          <line x1="40" y1="55" x2="58" y2="42" stroke="#7A5230" strokeWidth="2" strokeLinecap="round" />
-          <line x1="40" y1="65" x2="55" y2="55" stroke="#7A5230" strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="40" y1="50" x2="30" y2="38" stroke="#7A5230" strokeWidth="1.5" strokeLinecap="round" />
-          {/* Leaf cluster (circle canopy proportional to fullness) */}
-          {leafCount > 0 && (
-            <>
-              <circle cx="40" cy="42" r={12 + fullness * 10} fill={tree.type === 'gratitude' ? '#FFB7C5' : '#4a7a4a'} opacity={0.25 + fullness * 0.3} />
-              <circle cx="32" cy="48" r={8 + fullness * 6} fill={tree.type === 'gratitude' ? '#FFB7C5' : '#5a8a5a'} opacity={0.2 + fullness * 0.25} />
-              <circle cx="50" cy="46" r={8 + fullness * 6} fill={tree.type === 'gratitude' ? '#FFB7C5' : '#5a8a5a'} opacity={0.2 + fullness * 0.25} />
-            </>
-          )}
-          {/* Ground dot */}
-          <ellipse cx="40" cy="92" rx="12" ry="3" fill="#1a3a1a" opacity="0.5" />
-        </svg>
+        <MiniTreeSvg
+          seed={seed}
+          leafCount={leafCount}
+          leaves={leaves}
+          type={tree.type}
+        />
       </div>
 
       <div className="mini-tree-info">
@@ -43,7 +105,7 @@ function MiniTree({ tree, leafCount, onClick }) {
   )
 }
 
-export default function OrchardView({ trees, treeLeaveCounts, onSelectTree, onCreateTree }) {
+export default function OrchardView({ trees, treeLeaveCounts, allLeaves = [], onSelectTree, onCreateTree }) {
   return (
     <div className="orchard-view">
       <div className="orchard-header">
@@ -52,17 +114,17 @@ export default function OrchardView({ trees, treeLeaveCounts, onSelectTree, onCr
       </div>
 
       <div className="orchard-grid">
-        {/* New tree buttons */}
+        {/* New tree — shows base foliage preview */}
         <button className="new-tree-card" onClick={() => onCreateTree('emotion')}>
-          <div className="new-tree-icon">
-            <TreePine size={24} />
+          <div className="mini-tree-container">
+            <MiniTreeSvg seed={42} leafCount={0} type="emotion" />
           </div>
           <span className="new-tree-label">New Emotion Tree</span>
         </button>
 
         <button className="new-tree-card new-tree-gratitude" onClick={() => onCreateTree('gratitude')}>
-          <div className="new-tree-icon">
-            <Flower2 size={24} />
+          <div className="mini-tree-container">
+            <MiniTreeSvg seed={99} leafCount={0} type="gratitude" />
           </div>
           <span className="new-tree-label">New Gratitude Tree</span>
         </button>
@@ -73,6 +135,7 @@ export default function OrchardView({ trees, treeLeaveCounts, onSelectTree, onCr
             key={tree.id}
             tree={tree}
             leafCount={treeLeaveCounts[tree.id] || 0}
+            leaves={allLeaves.filter(l => l.tree_id === tree.id)}
             onClick={onSelectTree}
           />
         ))}
