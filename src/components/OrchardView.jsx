@@ -12,18 +12,50 @@ const BASE_GREENS = [
   '#2d6030', '#1a4420', '#234e28', '#1c5025', '#265830',
 ]
 
+// Mini branch geometry matching the SVG branches below
+const MINI_BRANCHES = [
+  { sx: 40, sy: 76, ex: 18, ey: 60 },
+  { sx: 40, sy: 76, ex: 62, ey: 60 },
+  { sx: 40, sy: 66, ex: 15, ey: 44 },
+  { sx: 40, sy: 66, ex: 65, ey: 44 },
+  { sx: 40, sy: 57, ex: 22, ey: 32 },
+  { sx: 40, sy: 57, ex: 58, ey: 32 },
+  { sx: 40, sy: 50, ex: 32, ey: 24 },
+  { sx: 40, sy: 50, ex: 48, ey: 24 },
+  { sx: 40, sy: 44, ex: 40, ey: 20 },
+]
+
 function generateMiniPositions(seed, total) {
-  const goldenAngle = Math.PI * (3 - Math.sqrt(5))
+  const s = (n) => seededRandom(seed + n)
   const positions = []
-  for (let i = 0; i < total; i++) {
-    const angle = i * goldenAngle + seededRandom(seed + i * 7) * 0.4
-    const r = 3 + (i / Math.max(total, 1)) * 17 + seededRandom(seed + i * 13) * 3
+
+  // Place leaves along branches at multiple points
+  const tValues = [1.0, 0.65, 0.35, 0.85, 0.15]
+  let si = 0
+  for (const t of tValues) {
+    for (const b of MINI_BRANCHES) {
+      if (positions.length >= total) break
+      const jitter = 5
+      positions.push({
+        x: b.sx + t * (b.ex - b.sx) + (s(si) - 0.5) * jitter,
+        y: b.sy + t * (b.ey - b.sy) + (s(si + 1) - 0.5) * jitter,
+      })
+      si += 2
+    }
+  }
+
+  // Fill any remaining with canopy scatter
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5))
+  for (let i = positions.length; i < total; i++) {
+    const angle = i * goldenAngle + s(500 + i) * 0.4
+    const r = 5 + (i / total) * 20 + s(600 + i) * 4
     positions.push({
       x: 40 + Math.cos(angle) * r,
-      y: 38 + Math.sin(angle) * r * 0.72,
+      y: 46 + Math.sin(angle) * r * 0.85,
     })
   }
-  return positions
+
+  return positions.slice(0, total)
 }
 
 function MiniTreeSvg({ seed, leafCount, leaves = [], type = 'emotion' }) {
