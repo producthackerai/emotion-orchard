@@ -6,134 +6,148 @@ function seededRandom(seed) {
   return x - Math.floor(x)
 }
 
-// Quadratic bezier point at parameter t
 function quadAt(p0, p1, p2, t) {
   const mt = 1 - t
   return mt * mt * p0 + 2 * mt * t * p1 + t * t * p2
 }
 
+// Elegant Tree of Life — sweeping curved branches, circular canopy
 function generateTree(seed) {
   const s = (n) => seededRandom(seed + n)
 
-  // Trunk — gentle curve, wider at base
-  const trunkSway = (s(1) - 0.5) * 12
+  const cx = 200 // center x
+  const trunkBottom = 455
+  const trunkTop = 195
+  const sway = (s(1) - 0.5) * 8
+
   const trunk = {
-    x1: 200, y1: 465,
-    cx: 200 + trunkSway, cy: 320,
-    x2: 200 + trunkSway * 0.3, y2: 155,
+    x1: cx, y1: trunkBottom,
+    cx: cx + sway, cy: (trunkBottom + trunkTop) / 2,
+    x2: cx + sway * 0.3, y2: trunkTop,
   }
 
-  // Root flare points
+  // Root flare — gentle curves mirroring branches
   const roots = [
-    { x: trunk.x1 - 18, y: trunk.y1 + 5, cx: trunk.x1 - 35, cy: trunk.y1 - 15 },
-    { x: trunk.x1 + 18, y: trunk.y1 + 5, cx: trunk.x1 + 35, cy: trunk.y1 - 15 },
+    { x1: cx, y1: trunkBottom, cx: cx - 25, cy: trunkBottom + 5, x2: cx - 40, y2: trunkBottom + 12 },
+    { x1: cx, y1: trunkBottom, cx: cx + 25, cy: trunkBottom + 5, x2: cx + 40, y2: trunkBottom + 12 },
+    { x1: cx, y1: trunkBottom, cx: cx - 12, cy: trunkBottom + 8, x2: cx - 22, y2: trunkBottom + 18 },
+    { x1: cx, y1: trunkBottom, cx: cx + 12, cy: trunkBottom + 8, x2: cx + 22, y2: trunkBottom + 18 },
   ]
 
-  // Branches — stored as numeric data, NOT svg strings
+  // Tree of Life branches — graceful sweeping curves
+  // Each pair is symmetrical left/right
+  const branchDefs = [
+    // Lower pair — widest sweep
+    { tOnTrunk: 0.55, angle: 65, length: 110, curve: 40 },
+    // Middle pair
+    { tOnTrunk: 0.45, angle: 50, length: 95, curve: 35 },
+    // Upper-mid pair
+    { tOnTrunk: 0.30, angle: 40, length: 80, curve: 25 },
+    // Top pair — more vertical
+    { tOnTrunk: 0.18, angle: 25, length: 65, curve: 15 },
+    // Crown branches — nearly vertical
+    { tOnTrunk: 0.08, angle: 12, length: 50, curve: 8 },
+  ]
+
   const branches = []
-  const numBranches = 8
+  for (let i = 0; i < branchDefs.length; i++) {
+    const def = branchDefs[i]
+    const t = def.tOnTrunk
+    const variation = s(10 + i) * 0.15
 
-  for (let i = 0; i < numBranches; i++) {
-    const t = 0.2 + (i / numBranches) * 0.65
-    const side = i % 2 === 0 ? -1 : 1
+    for (const side of [-1, 1]) {
+      const sx = quadAt(trunk.x1, trunk.cx, trunk.x2, 1 - t)
+      const sy = quadAt(trunk.y1, trunk.cy, trunk.y2, 1 - t)
 
-    // Start point on trunk
-    const sx = quadAt(trunk.x1, trunk.cx, trunk.x2, t)
-    const sy = quadAt(trunk.y1, trunk.cy, trunk.y2, t)
+      const angleDeg = def.angle + (s(20 + i + (side > 0 ? 50 : 0)) - 0.5) * 12
+      const len = def.length * (1 + variation)
+      const rad = angleDeg * Math.PI / 180
 
-    // Branch spreads outward and slightly up
-    const angleDeg = 20 + s(10 + i) * 40 // 20-60 degrees from horizontal
-    const length = 55 + s(20 + i) * 75 + (1 - t) * 20 // longer near bottom
-    const rad = angleDeg * Math.PI / 180
+      // End point — outward and upward
+      const ex = sx + side * Math.cos(rad) * len
+      const ey = sy - Math.sin(rad) * len
 
-    const ex = sx + side * Math.cos(rad) * length
-    const ey = sy - Math.sin(rad) * length
+      // Control point — creates the graceful curve
+      const curveFactor = def.curve * (1 + (s(30 + i) - 0.5) * 0.3)
+      const cxB = sx + side * Math.cos(rad) * len * 0.55 + side * curveFactor * 0.3
+      const cyB = sy - Math.sin(rad) * len * 0.7 - curveFactor
 
-    // Control point — slight upward curve
-    const cx = sx + side * Math.cos(rad) * length * 0.5 + (s(30 + i) - 0.5) * 15
-    const cy = sy - Math.sin(rad) * length * 0.6 - s(40 + i) * 15
+      const thickness = 2 + (t) * 3.5 // thicker near bottom
 
-    const thickness = 2.5 + (1 - t) * 4
-
-    // Sub-branch from ~60% along main branch
-    const subT = 0.5 + s(50 + i) * 0.2
-    const subSx = quadAt(sx, cx, ex, subT)
-    const subSy = quadAt(sy, cy, ey, subT)
-    const subAngle = (15 + s(60 + i) * 30) * Math.PI / 180
-    const subLen = length * (0.3 + s(70 + i) * 0.25)
-    const subEx = subSx + side * Math.cos(subAngle) * subLen
-    const subEy = subSy - Math.sin(subAngle) * subLen
-    const subCx = (subSx + subEx) / 2 + (s(80 + i) - 0.5) * 10
-    const subCy = (subSy + subEy) / 2 - s(90 + i) * 12
-
-    branches.push({
-      sx, sy, cx, cy, ex, ey, thickness, side,
-      sub: { sx: subSx, sy: subSy, cx: subCx, cy: subCy, ex: subEx, ey: subEy, thickness: thickness * 0.5 },
-    })
-  }
-
-  // Leaf positions — computed directly from branch math
-  const leafPositions = []
-
-  for (let bi = 0; bi < branches.length; bi++) {
-    const b = branches[bi]
-    // 3 positions along main branch (50%, 70%, 95%)
-    for (const t of [0.5, 0.7, 0.95]) {
-      const jx = (s(200 + bi * 20 + t * 100) - 0.5) * 12
-      const jy = (s(300 + bi * 20 + t * 100) - 0.5) * 10
-      leafPositions.push({
-        x: quadAt(b.sx, b.cx, b.ex, t) + jx,
-        y: quadAt(b.sy, b.cy, b.ey, t) + jy,
-        rotation: (s(400 + bi * 10 + t * 50) - 0.5) * 70,
-        scale: 0.9 + s(500 + bi * 10 + t * 50) * 0.4,
-      })
-    }
-    // 2 positions on sub-branch
-    for (const t of [0.55, 0.9]) {
-      const jx = (s(600 + bi * 20 + t * 100) - 0.5) * 10
-      const jy = (s(700 + bi * 20 + t * 100) - 0.5) * 8
-      leafPositions.push({
-        x: quadAt(b.sub.sx, b.sub.cx, b.sub.ex, t) + jx,
-        y: quadAt(b.sub.sy, b.sub.cy, b.sub.ey, t) + jy,
-        rotation: (s(800 + bi * 10 + t * 50) - 0.5) * 60,
-        scale: 0.8 + s(900 + bi * 10 + t * 50) * 0.35,
-      })
+      branches.push({ sx, sy, cx: cxB, cy: cyB, ex, ey, thickness, side })
     }
   }
 
-  // Crown cluster — leaves near the top of the tree
-  const crownX = trunk.x2
-  const crownY = trunk.y2
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2 + s(1000 + i) * 0.5
-    const r = 18 + s(1100 + i) * 30
-    leafPositions.push({
-      x: crownX + Math.cos(a) * r,
-      y: crownY - 5 + Math.sin(a) * r * 0.5 - 8,
-      rotation: (s(1200 + i) - 0.5) * 50,
-      scale: 0.85 + s(1300 + i) * 0.35,
-    })
-  }
+  // Generate exactly 30 leaf positions in concentric rings within canopy
+  const canopyCx = trunk.x2
+  const canopyCy = trunk.y2 - 15
+  const leafPositions = generateLeafPositions(canopyCx, canopyCy, seed, branches)
 
-  return { trunk, roots, branches, leafPositions }
+  return { trunk, roots, branches, leafPositions, canopyCx, canopyCy }
 }
 
-function LeafShape({ x, y, color, rotation, scale, index, isNew, type = 'leaf' }) {
-  const animDelay = isNew ? 0 : index * 0.04
+// Distribute 30 leaf positions across canopy — no overlap guaranteed
+function generateLeafPositions(cx, cy, seed, branches) {
+  const s = (n) => seededRandom(seed + n)
+  const positions = []
 
-  // IMPORTANT: Outer <g> handles positioning via SVG transform attribute.
-  // Inner <g> handles CSS animation. They MUST be separate because CSS
-  // animation transform overrides SVG transform attributes.
+  // Place leaves along branch tips and midpoints (ensures they're ON the tree)
+  for (let bi = 0; bi < branches.length; bi++) {
+    const b = branches[bi]
+    // Tip of branch
+    positions.push({
+      x: b.ex + (s(100 + bi) - 0.5) * 8,
+      y: b.ey + (s(200 + bi) - 0.5) * 6,
+      rotation: (s(300 + bi) - 0.5) * 80,
+      scale: 0.9 + s(400 + bi) * 0.3,
+    })
+    // 70% along branch
+    positions.push({
+      x: quadAt(b.sx, b.cx, b.ex, 0.7) + (s(500 + bi) - 0.5) * 10,
+      y: quadAt(b.sy, b.cy, b.ey, 0.7) + (s(600 + bi) - 0.5) * 8,
+      rotation: (s(700 + bi) - 0.5) * 70,
+      scale: 0.85 + s(800 + bi) * 0.35,
+    })
+  }
+
+  // Fill remaining positions in canopy area using golden angle spiral
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5))
+  const remaining = 30 - positions.length
+  for (let i = 0; i < remaining; i++) {
+    const t = (positions.length + i) / 30
+    const angle = i * goldenAngle + s(900 + i) * 0.3
+    const radius = 30 + t * 85 + s(1000 + i) * 15
+    positions.push({
+      x: cx + Math.cos(angle) * radius,
+      y: cy + Math.sin(angle) * radius * 0.65 - 10,
+      rotation: (s(1100 + i) - 0.5) * 80,
+      scale: 0.8 + s(1200 + i) * 0.4,
+    })
+  }
+
+  return positions.slice(0, 30)
+}
+
+// Shuffle array with seed
+function seededShuffle(arr, seed) {
+  const result = [...arr]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(seededRandom(seed + i * 17) * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
+
+function LeafShape({ x, y, color, rotation, scale, index, isNew, isScattering, type = 'leaf' }) {
+  const cls = isScattering ? 'leaf-scatter' : isNew ? 'leaf-new' : 'leaf-existing'
+  const delay = isScattering ? index * 0.03 : isNew ? 0 : index * 0.03
 
   if (type === 'blossom') {
     return (
       <g transform={`translate(${x}, ${y}) rotate(${rotation}) scale(${scale})`}>
-        <g
-          className={isNew ? 'leaf-new' : 'leaf-existing'}
-          style={{ animationDelay: `${animDelay}s` }}
-        >
-          {[0, 72, 144, 216, 288].map((angle, i) => (
-            <ellipse key={i} cx={0} cy={-6} rx={4} ry={7} fill={color} opacity={0.8} transform={`rotate(${angle})`} />
+        <g className={cls} style={{ animationDelay: `${delay}s` }}>
+          {[0, 72, 144, 216, 288].map((a, i) => (
+            <ellipse key={i} cx={0} cy={-6} rx={4.5} ry={7.5} fill={color} opacity={0.8} transform={`rotate(${a})`} />
           ))}
           <circle cx={0} cy={0} r={3} fill="#FFE4B5" opacity={0.9} />
         </g>
@@ -143,19 +157,16 @@ function LeafShape({ x, y, color, rotation, scale, index, isNew, type = 'leaf' }
 
   return (
     <g transform={`translate(${x}, ${y}) rotate(${rotation}) scale(${scale})`}>
-      <g
-        className={isNew ? 'leaf-new' : 'leaf-existing'}
-        style={{ animationDelay: `${animDelay}s` }}
-      >
+      <g className={cls} style={{ animationDelay: `${delay}s` }}>
         <path
-          d="M0,-10 C4,-8 7,-3 7,0 C7,4 4,9 0,11 C-4,9 -7,4 -7,0 C-7,-3 -4,-8 0,-10Z"
+          d="M0,-11 C5,-9 8,-3 8,1 C8,5 5,10 0,12 C-5,10 -8,5 -8,1 C-8,-3 -5,-9 0,-11Z"
           fill={color}
-          opacity={0.88}
+          opacity={0.9}
         />
         <path
-          d="M0,-7 Q1,0 0,8 M0,-2 Q3,-4 5,-6 M0,2 Q-3,0 -5,-2"
-          stroke="rgba(255,255,255,0.15)"
-          strokeWidth={0.6}
+          d="M0,-8 Q0.5,0 0,9 M0,-3 Q3.5,-5 5.5,-7 M0,2 Q-3.5,-0.5 -5.5,-3"
+          stroke="rgba(255,255,255,0.12)"
+          strokeWidth={0.5}
           fill="none"
         />
       </g>
@@ -163,38 +174,48 @@ function LeafShape({ x, y, color, rotation, scale, index, isNew, type = 'leaf' }
   )
 }
 
-export default function TreeCanvas({ leaves = [], treeType = 'emotion', treeSeed = 12345, newLeafId = null }) {
+export default function TreeCanvas({
+  leaves = [], treeType = 'emotion', treeSeed = 12345,
+  newLeafId = null, positionSeed = 0, isScattering = false,
+}) {
   const tree = useMemo(() => generateTree(treeSeed), [treeSeed])
 
-  const positionedLeaves = leaves.map((leaf, i) => {
-    const pos = tree.leafPositions[i % tree.leafPositions.length]
-    const cycle = Math.floor(i / tree.leafPositions.length)
-    return {
-      ...leaf,
-      x: pos.x + cycle * (seededRandom(i * 7) - 0.5) * 16,
-      y: pos.y + cycle * (seededRandom(i * 13) - 0.5) * 12,
-      rotation: pos.rotation + cycle * 20,
-      scale: pos.scale * Math.max(0.7, 1 - cycle * 0.15),
-    }
-  })
+  // Map leaves to positions — positionSeed shuffles the assignment
+  const positionedLeaves = useMemo(() => {
+    const indices = positionSeed > 0
+      ? seededShuffle([...Array(30).keys()], positionSeed)
+      : [...Array(30).keys()]
+
+    return leaves.map((leaf, i) => {
+      const posIdx = indices[i % 30]
+      const pos = tree.leafPositions[posIdx]
+      return {
+        ...leaf,
+        x: pos.x,
+        y: pos.y,
+        rotation: pos.rotation,
+        scale: pos.scale,
+      }
+    })
+  }, [leaves, tree.leafPositions, positionSeed])
 
   return (
     <div className="tree-canvas-container">
-      <svg viewBox="0 0 400 500" className="tree-canvas-svg" preserveAspectRatio="xMidYMax meet">
+      <svg viewBox="0 0 400 480" className="tree-canvas-svg" preserveAspectRatio="xMidYMid meet">
         <defs>
           <linearGradient id="trunkGrad" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="#4A2E14" />
-            <stop offset="25%" stopColor="#7A5230" />
+            <stop offset="30%" stopColor="#7A5230" />
             <stop offset="50%" stopColor="#9B6B3C" />
-            <stop offset="75%" stopColor="#7A5230" />
+            <stop offset="70%" stopColor="#7A5230" />
             <stop offset="100%" stopColor="#4A2E14" />
           </linearGradient>
-          <radialGradient id="groundGrad" cx="50%" cy="0%" r="55%">
-            <stop offset="0%" stopColor="#1a3a1a" stopOpacity="0.5" />
+          <radialGradient id="groundGrad" cx="50%" cy="0%" r="50%">
+            <stop offset="0%" stopColor="#1a3a1a" stopOpacity="0.4" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
-          <radialGradient id="canopyGlow" cx="50%" cy="55%" r="50%">
-            <stop offset="0%" stopColor="#2a4a2a" stopOpacity="0.15" />
+          <radialGradient id="canopyGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#2a5a2a" stopOpacity={0.06 + leaves.length * 0.005} />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
           <filter id="leafGlow" x="-50%" y="-50%" width="200%" height="200%">
@@ -203,21 +224,25 @@ export default function TreeCanvas({ leaves = [], treeType = 'emotion', treeSeed
           </filter>
         </defs>
 
-        {/* Canopy glow behind leaves */}
-        {leaves.length > 3 && (
-          <ellipse cx={tree.trunk.x2} cy={tree.trunk.y2 + 40} rx={120 + leaves.length * 2} ry={90 + leaves.length} fill="url(#canopyGlow)" />
+        {/* Canopy ambient glow */}
+        {leaves.length > 2 && (
+          <ellipse
+            cx={tree.canopyCx} cy={tree.canopyCy + 20}
+            rx={130 + leaves.length} ry={110 + leaves.length * 0.8}
+            fill="url(#canopyGlow)"
+          />
         )}
 
         {/* Ground */}
-        <ellipse cx="200" cy="475" rx="150" ry="18" fill="url(#groundGrad)" />
+        <ellipse cx="200" cy="465" rx="130" ry="14" fill="url(#groundGrad)" />
 
-        {/* Root flare */}
-        {tree.roots.map((root, i) => (
+        {/* Roots */}
+        {tree.roots.map((r, i) => (
           <path
             key={i}
-            d={`M ${tree.trunk.x1} ${tree.trunk.y1} Q ${root.cx} ${root.cy} ${root.x} ${root.y}`}
+            d={`M ${r.x1} ${r.y1} Q ${r.cx} ${r.cy} ${r.x2} ${r.y2}`}
             stroke="url(#trunkGrad)"
-            strokeWidth={6}
+            strokeWidth={3.5 - i * 0.5}
             strokeLinecap="round"
             fill="none"
           />
@@ -227,15 +252,13 @@ export default function TreeCanvas({ leaves = [], treeType = 'emotion', treeSeed
         <path
           d={`M ${tree.trunk.x1} ${tree.trunk.y1} Q ${tree.trunk.cx} ${tree.trunk.cy} ${tree.trunk.x2} ${tree.trunk.y2}`}
           stroke="url(#trunkGrad)"
-          strokeWidth={16}
+          strokeWidth={14}
           strokeLinecap="round"
           fill="none"
-          className="tree-trunk"
         />
-        {/* Trunk bark highlight */}
         <path
-          d={`M ${tree.trunk.x1 + 3} ${tree.trunk.y1} Q ${tree.trunk.cx + 3} ${tree.trunk.cy} ${tree.trunk.x2 + 2} ${tree.trunk.y2}`}
-          stroke="rgba(255,255,255,0.05)"
+          d={`M ${tree.trunk.x1 + 2} ${tree.trunk.y1} Q ${tree.trunk.cx + 2} ${tree.trunk.cy} ${tree.trunk.x2 + 1} ${tree.trunk.y2}`}
+          stroke="rgba(255,255,255,0.04)"
           strokeWidth={3}
           strokeLinecap="round"
           fill="none"
@@ -244,22 +267,14 @@ export default function TreeCanvas({ leaves = [], treeType = 'emotion', treeSeed
         {/* Branches */}
         <g className="tree-branches">
           {tree.branches.map((b, i) => (
-            <g key={i}>
-              <path
-                d={`M ${b.sx} ${b.sy} Q ${b.cx} ${b.cy} ${b.ex} ${b.ey}`}
-                stroke="#6B4226"
-                strokeWidth={b.thickness}
-                strokeLinecap="round"
-                fill="none"
-              />
-              <path
-                d={`M ${b.sub.sx} ${b.sub.sy} Q ${b.sub.cx} ${b.sub.cy} ${b.sub.ex} ${b.sub.ey}`}
-                stroke="#7A5230"
-                strokeWidth={b.sub.thickness}
-                strokeLinecap="round"
-                fill="none"
-              />
-            </g>
+            <path
+              key={i}
+              d={`M ${b.sx} ${b.sy} Q ${b.cx} ${b.cy} ${b.ex} ${b.ey}`}
+              stroke="#6B4226"
+              strokeWidth={b.thickness}
+              strokeLinecap="round"
+              fill="none"
+            />
           ))}
         </g>
 
@@ -275,24 +290,25 @@ export default function TreeCanvas({ leaves = [], treeType = 'emotion', treeSeed
               scale={leaf.scale}
               index={i}
               isNew={leaf.id === newLeafId}
+              isScattering={isScattering}
               type={treeType === 'gratitude' ? 'blossom' : 'leaf'}
             />
           ))}
         </g>
 
         {/* Fireflies */}
-        {leaves.length > 5 && (
-          <g className="ambient-particles">
-            {[...Array(4)].map((_, i) => (
+        {leaves.length > 8 && (
+          <g>
+            {[...Array(3)].map((_, i) => (
               <circle
                 key={i}
-                cx={80 + i * 80 + Math.sin(i * 3) * 40}
-                cy={120 + i * 50 + Math.cos(i * 2) * 30}
-                r={1.5}
+                cx={100 + i * 100 + Math.sin(i * 3) * 30}
+                cy={100 + i * 80}
+                r={1.2}
                 fill="#f59e0b"
-                opacity={0.25}
+                opacity={0.2}
                 className="firefly"
-                style={{ animationDelay: `${i * 1.3}s` }}
+                style={{ animationDelay: `${i * 1.5}s` }}
               />
             ))}
           </g>

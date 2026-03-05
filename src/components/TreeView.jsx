@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { Share2, Lock, Unlock, Trash2, Edit3 } from 'lucide-react'
+import { Share2, Lock, Unlock, Trash2, Edit3, Shuffle } from 'lucide-react'
 import TreeCanvas from './TreeCanvas'
 import EmotionPalette from './EmotionPalette'
 import GratitudeInput from './GratitudeInput'
@@ -11,6 +11,8 @@ export default function TreeView({ tree, leaves, onAddLeaf, onUpdateTree, onDele
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState(tree?.name || '')
   const [showMenu, setShowMenu] = useState(false)
+  const [positionSeed, setPositionSeed] = useState(0)
+  const [isScattering, setIsScattering] = useState(false)
   const isFull = leaves.length >= 30
 
   const handleEmotionSelect = useCallback(async (emotion) => {
@@ -43,6 +45,16 @@ export default function TreeView({ tree, leaves, onAddLeaf, onUpdateTree, onDele
     }
   }, [tree?.id, onAddLeaf, isFull])
 
+  const handleRearrange = useCallback(() => {
+    if (leaves.length < 2 || isScattering) return
+    setIsScattering(true)
+    // After scatter animation, land in new positions
+    setTimeout(() => {
+      setPositionSeed(prev => prev + 1)
+      setIsScattering(false)
+    }, 1200)
+  }, [leaves.length, isScattering])
+
   const handleSaveName = () => {
     if (editName.trim() && editName !== tree.name) {
       onUpdateTree(tree.id, { name: editName.trim() })
@@ -70,7 +82,6 @@ export default function TreeView({ tree, leaves, onAddLeaf, onUpdateTree, onDele
 
   if (!tree) return null
 
-  // Generate a numeric seed from tree ID
   const treeSeed = tree.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
 
   return (
@@ -99,6 +110,16 @@ export default function TreeView({ tree, leaves, onAddLeaf, onUpdateTree, onDele
         </div>
 
         <div className="tree-actions">
+          {leaves.length >= 2 && (
+            <button
+              className={`tree-action-btn ${isScattering ? 'tree-action-spinning' : ''}`}
+              onClick={handleRearrange}
+              aria-label="Rearrange leaves"
+              disabled={isScattering}
+            >
+              <Shuffle size={14} />
+            </button>
+          )}
           <button
             className="tree-action-btn"
             onClick={() => { setEditName(tree.name); setIsEditing(true) }}
@@ -138,6 +159,8 @@ export default function TreeView({ tree, leaves, onAddLeaf, onUpdateTree, onDele
         treeType={tree.type}
         treeSeed={treeSeed}
         newLeafId={newLeafId}
+        positionSeed={positionSeed}
+        isScattering={isScattering}
       />
 
       {/* Full tree message */}
