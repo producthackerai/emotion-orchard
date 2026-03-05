@@ -1,8 +1,8 @@
-import { LogOut, Settings, ChevronLeft } from 'lucide-react'
+import { LogOut, Settings, ChevronLeft, Sun, Moon } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import '../styles/Header.css'
 
-export default function Header({ currentView, onBack, onNavigate }) {
+export default function Header({ currentView, onBack, onNavigate, theme, onToggleTheme }) {
   const { signOut } = useAuth()
 
   const showBack = currentView === 'tree' || currentView === 'settings' ||
@@ -33,6 +33,13 @@ export default function Header({ currentView, onBack, onNavigate }) {
       </div>
 
       <div className="header-right">
+        <button
+          className="header-btn"
+          onClick={onToggleTheme}
+          aria-label="Toggle theme"
+        >
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
         <button
           className="header-btn"
           onClick={() => onNavigate('settings')}

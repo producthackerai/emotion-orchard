@@ -71,7 +71,7 @@
 /* Balance bar */
 .balance-bar {
   height: 8px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--color-overlay-hover);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 6px;
@@ -137,7 +137,7 @@
 .dist-bar-bg {
   flex: 1;
   height: 6px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--color-overlay-light);
   border-radius: 3px;
   overflow: hidden;
 }

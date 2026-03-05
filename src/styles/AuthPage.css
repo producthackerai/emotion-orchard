@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: center;
   padding: 2rem 1rem;
-  background: radial-gradient(ellipse at 50% 80%, #0a1a0a 0%, #000 70%);
+  background: var(--color-auth-bg);
 }
 
 .auth-container {

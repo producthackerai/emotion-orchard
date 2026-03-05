@@ -2,6 +2,33 @@ import '../styles/ReleaseNotes.css'
 
 const RELEASES = [
   {
+    version: '1.2.0',
+    title: 'Light Mode & Lush Canopy',
+    date: '2026-03-04',
+    items: [
+      { text: 'Light mode is now the default — warm, nature-inspired palette', bold: true },
+      { text: 'Dark mode toggle via moon/sun icon in header' },
+      { text: '30 base foliage leaves always present — tree looks lush from the start' },
+      { text: 'Bigger, more expressive leaf shapes (~35% larger)' },
+      { text: 'Base green leaves now participate in the scatter/rearrange animation' },
+      { text: '60 total leaves at full growth (30 base + 30 emotion)' },
+      { text: 'Theme preference saved across sessions' },
+    ],
+  },
+  {
+    version: '1.1.0',
+    title: 'Tree of Life Redesign',
+    date: '2026-03-04',
+    items: [
+      { text: 'Hand-crafted Tree of Life branch design — elegant, symmetrical canopy', bold: true },
+      { text: 'Rearrange button — scatter animation sends leaves flying, then they land in new spots' },
+      { text: 'Non-overlapping leaf positions using golden angle distribution' },
+      { text: 'Fixed CSS/SVG transform conflict that caused leaves to cluster at origin' },
+      { text: 'Canopy glow effect that intensifies as leaves grow' },
+      { text: 'Fireflies appear after 8+ leaves' },
+    ],
+  },
+  {
     version: '1.0.0',
     title: 'Welcome to Emotion Orchard',
     date: '2026-03-03',

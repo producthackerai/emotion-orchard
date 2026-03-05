@@ -24,6 +24,18 @@ export default function App() {
   const [treeLeaveCounts, setTreeLeaveCounts] = useState({})
   const [dataLoaded, setDataLoaded] = useState(false)
 
+  // Theme — light default, persisted
+  const [theme, setTheme] = useState(() => localStorage.getItem('eo-theme') || 'light')
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('eo-theme', theme)
+  }, [theme])
+
+  const toggleTheme = useCallback(() => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light')
+  }, [])
+
   const getAuthHeaders = useCallback(() => ({
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${session?.access_token}`,
@@ -207,6 +219,8 @@ export default function App() {
         currentView={view}
         onBack={handleBack}
         onNavigate={handleNavigate}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       <main className="app-main">

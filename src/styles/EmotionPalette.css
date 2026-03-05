@@ -29,7 +29,7 @@
 
 .emotion-btn:active:not(:disabled) {
   transform: scale(0.92);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-overlay-light);
   border-color: var(--emotion-color);
 }
 
@@ -39,7 +39,7 @@
 }
 
 .emotion-btn-recent {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--color-overlay-light);
   border-color: var(--emotion-color);
 }
 

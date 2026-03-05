@@ -1,31 +1,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Brand — amber/dark */
-  --color-bg: #000;
-  --color-bg-card: #0a0a0a;
-  --color-bg-alt: #111;
-  --color-border: #1a1a1a;
-  --color-border-hover: #333;
+  /* Light mode (default) — warm, nature-inspired */
+  --color-bg: #faf9f6;
+  --color-bg-card: #ffffff;
+  --color-bg-alt: #f2f0ec;
+  --color-border: #e5e2da;
+  --color-border-hover: #ccc8be;
   --color-accent: #f59e0b;
   --color-accent-hover: #d97706;
   --color-success: #10b981;
   --color-danger: #ef4444;
-  --color-text: #fff;
-  --color-text-body: #ccc;
-  --color-text-secondary: #888;
-  --color-text-muted: #555;
+  --color-text: #1a1a1a;
+  --color-text-body: #3a3a3a;
+  --color-text-secondary: #6b6b6b;
+  --color-text-muted: #a0a0a0;
 
   /* Nature palette */
   --color-trunk: #8B5E3C;
   --color-trunk-dark: #5C3A1E;
   --color-branch: #7A5230;
-  --color-grass-dark: #0a1f0a;
-  --color-grass: #1a3a1a;
-  --color-sky-top: #050510;
-  --color-sky-bottom: #0a0a0a;
+  --color-grass-dark: #2d5a2d;
+  --color-grass: #4a8c4a;
+  --color-sky-top: #d4e8f0;
+  --color-sky-bottom: #f0ede6;
 
-  /* Typography — softer font for this app */
+  /* Theme-aware utilities */
+  --color-tree-bg: linear-gradient(to bottom, #e3efeb 0%, #edeae2 50%, #e0ddd4 100%);
+  --color-overlay-light: rgba(0, 0, 0, 0.04);
+  --color-overlay-hover: rgba(0, 0, 0, 0.08);
+  --shadow-menu: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --color-scrollbar: #ccc;
+  --color-footer: #999;
+  --color-auth-bg: radial-gradient(ellipse at 50% 80%, #e8f0e4 0%, #faf9f6 70%);
+
+  /* Typography */
   --font-display: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Menlo', monospace;
 
@@ -39,6 +48,32 @@
   /* Safe area */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Dark mode ── */
+[data-theme="dark"] {
+  --color-bg: #000;
+  --color-bg-card: #0a0a0a;
+  --color-bg-alt: #111;
+  --color-border: #1a1a1a;
+  --color-border-hover: #333;
+  --color-text: #fff;
+  --color-text-body: #ccc;
+  --color-text-secondary: #888;
+  --color-text-muted: #555;
+
+  --color-grass-dark: #0a1f0a;
+  --color-grass: #1a3a1a;
+  --color-sky-top: #050510;
+  --color-sky-bottom: #0a0a0a;
+
+  --color-tree-bg: transparent;
+  --color-overlay-light: rgba(255, 255, 255, 0.03);
+  --color-overlay-hover: rgba(255, 255, 255, 0.06);
+  --shadow-menu: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --color-scrollbar: #333;
+  --color-footer: #555;
+  --color-auth-bg: radial-gradient(ellipse at 50% 80%, #0a1a0a 0%, #000 70%);
 }
 
 *, *::before, *::after {
@@ -69,7 +104,7 @@ body {
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--color-scrollbar); border-radius: 2px; }
 
 /* Prevent text selection on interactive elements */
 button, .tap-target {
@@ -126,13 +161,13 @@ button, .tap-target {
   text-align: center;
   padding: 1.5rem 1rem calc(1rem + var(--safe-bottom));
   font-size: 0.65rem;
-  color: #555;
+  color: var(--color-footer);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
   font-family: var(--font-mono);
 }
 .app-footer a {
-  color: #555;
+  color: var(--color-footer);
   text-decoration: none;
   transition: color 0.15s ease;
 }
