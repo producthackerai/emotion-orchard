@@ -315,10 +315,12 @@ export default function TreeCanvas({
                 isNew={leaf.id === newLeafId} isScattering={isScattering}
                 type={treeType === 'gratitude' ? 'blossom' : 'leaf'}
               />
-              {/* Invisible tap target */}
+              {/* Hover (desktop) + tap (mobile) target */}
               <circle
                 cx={leaf.x} cy={leaf.y} r={16} fill="transparent"
                 style={{ cursor: 'pointer' }}
+                onPointerEnter={(e) => { if (e.pointerType !== 'touch') setSelectedIdx(i) }}
+                onPointerLeave={(e) => { if (e.pointerType !== 'touch') setSelectedIdx(null) }}
                 onClick={(e) => { e.stopPropagation(); setSelectedIdx(i === selectedIdx ? null : i) }}
               />
             </g>
