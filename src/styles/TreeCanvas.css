@@ -28,7 +28,8 @@
   transform-origin: 200px 455px;
 }
 
-.tree-leaves {
+.tree-leaves,
+.tree-leaves-base {
   animation: treeSway 10s ease-in-out infinite;
   transform-origin: 200px 455px;
   animation-delay: -0.8s;
@@ -76,10 +77,50 @@
   }
 }
 
-.firefly {
-  animation: float 3s ease-in-out infinite, gentlePulse 2.5s ease-in-out infinite;
+/* ── Fireflies ── */
+.firefly-dot {
+  animation: fireflyFloat ease-in-out infinite, fireflyPulse ease-in-out infinite;
 }
 
+@keyframes fireflyFloat {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(var(--fly-dx, 15px), calc(var(--fly-dy, 10px) * -1)); }
+  50% { transform: translate(calc(var(--fly-dx, 15px) * -0.5), var(--fly-dy, 10px)); }
+  75% { transform: translate(calc(var(--fly-dx, 15px) * -1), calc(var(--fly-dy, 10px) * -0.5)); }
+}
+
+@keyframes fireflyPulse {
+  0%, 100% { opacity: 0.15; }
+  40% { opacity: 0.6; }
+  60% { opacity: 0.45; }
+  80% { opacity: 0.7; }
+}
+
+/* ── Dappled sunlight ── */
+.light-spot {
+  animation: dapple ease-in-out infinite;
+}
+
+@keyframes dapple {
+  0%, 100% { opacity: 0; }
+  30% { opacity: 1; }
+  70% { opacity: 0.8; }
+}
+
+/* ── Falling leaf ── */
+.falling-leaf {
+  animation: leafDrift linear infinite;
+}
+
+@keyframes leafDrift {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  5% { opacity: 0.5; }
+  50% { transform: translate(-40px, 240px) rotate(180deg); opacity: 0.4; }
+  95% { opacity: 0; }
+  100% { transform: translate(-20px, 480px) rotate(360deg); opacity: 0; }
+}
+
+/* ── Leaf count ── */
 .tree-leaf-count {
   position: absolute;
   bottom: 4px;
@@ -90,7 +131,7 @@
   letter-spacing: 0.05em;
 }
 
-/* Leaf detail tooltip */
+/* ── Leaf detail tooltip ── */
 .leaf-tooltip {
   display: flex;
   align-items: flex-start;

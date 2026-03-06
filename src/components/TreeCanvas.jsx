@@ -38,18 +38,19 @@ function generateTree(seed) {
 
   const v = (n) => (s(n) - 0.5) * 5
 
+  // Branches — clock face layout, top branches shortened for denser canopy
   const defs = [
-    { sy: 388, ex: 78,  ey: 288, cx: 128, cy: 368, t: 4.5 },
-    { sy: 356, ex: 55,  ey: 235, cx: 108, cy: 322, t: 4.0 },
-    { sy: 325, ex: 52,  ey: 185, cx: 112, cy: 278, t: 3.5 },
-    { sy: 295, ex: 68,  ey: 128, cx: 122, cy: 236, t: 3.0 },
-    { sy: 266, ex: 115, ey: 78,  cx: 155, cy: 192, t: 2.7 },
-    { sy: 388, ex: 322, ey: 288, cx: 272, cy: 368, t: 4.5 },
-    { sy: 356, ex: 345, ey: 235, cx: 292, cy: 322, t: 4.0 },
-    { sy: 325, ex: 348, ey: 185, cx: 288, cy: 278, t: 3.5 },
-    { sy: 295, ex: 332, ey: 128, cx: 278, cy: 236, t: 3.0 },
-    { sy: 266, ex: 285, ey: 78,  cx: 245, cy: 192, t: 2.7 },
-    { sy: 242, ex: 200, ey: 62,  cx: 200, cy: 158, t: 2.5 },
+    { sy: 388, ex: 78,  ey: 288, cx: 128, cy: 368, t: 4.5 },  // 7 o'clock
+    { sy: 356, ex: 55,  ey: 235, cx: 108, cy: 322, t: 4.0 },  // 8 o'clock
+    { sy: 325, ex: 60,  ey: 195, cx: 118, cy: 278, t: 3.5 },  // 9 o'clock
+    { sy: 295, ex: 85,  ey: 155, cx: 135, cy: 245, t: 3.0 },  // 10 o'clock (shortened)
+    { sy: 270, ex: 135, ey: 115, cx: 165, cy: 205, t: 2.7 },  // 11 o'clock (shortened)
+    { sy: 388, ex: 322, ey: 288, cx: 272, cy: 368, t: 4.5 },  // 5 o'clock
+    { sy: 356, ex: 345, ey: 235, cx: 292, cy: 322, t: 4.0 },  // 4 o'clock
+    { sy: 325, ex: 340, ey: 195, cx: 282, cy: 278, t: 3.5 },  // 3 o'clock
+    { sy: 295, ex: 315, ey: 155, cx: 265, cy: 245, t: 3.0 },  // 2 o'clock (shortened)
+    { sy: 270, ex: 265, ey: 115, cx: 235, cy: 205, t: 2.7 },  // 1 o'clock (shortened)
+    { sy: 248, ex: 200, ey: 95,  cx: 200, cy: 175, t: 2.5 },  // 12 o'clock (shortened)
   ]
 
   const branches = defs.map((b, i) => ({
@@ -72,15 +73,15 @@ function computeLeafPositions(cx, branches, seed) {
   const placed = []
 
   function addPos(x, y, seedOffset) {
-    x = Math.max(42, Math.min(358, x))
-    y = Math.max(48, Math.min(318, y))
+    x = Math.max(48, Math.min(352, x))
+    y = Math.max(80, Math.min(318, y))
 
     let fx = x, fy = y
     for (const p of placed) {
       const dx = fx - p.x, dy = fy - p.y
       const dist = Math.sqrt(dx * dx + dy * dy)
-      if (dist < 15) {
-        const push = (15 - dist) / 2
+      if (dist < 14) {
+        const push = (14 - dist) / 2
         fx += (dx / (dist || 1)) * push
         fy += (dy / (dist || 1)) * push
       }
@@ -94,9 +95,11 @@ function computeLeafPositions(cx, branches, seed) {
     positions.push(pos)
   }
 
+  // Layer 1: branch tips
   branches.forEach((b, i) => {
     addPos(b.ex + (s(100+i)-0.5)*14, b.ey + (s(200+i)-0.5)*10, 300+i*10)
   })
+  // Layer 2: 60% along branches
   branches.forEach((b, i) => {
     addPos(
       quadAt(b.sx, b.cx, b.ex, 0.6) + (s(400+i)-0.5)*16,
@@ -104,6 +107,7 @@ function computeLeafPositions(cx, branches, seed) {
       600+i*10,
     )
   })
+  // Layer 3: 35% along branches
   branches.forEach((b, i) => {
     addPos(
       quadAt(b.sx, b.cx, b.ex, 0.35) + (s(700+i)-0.5)*20,
@@ -111,6 +115,7 @@ function computeLeafPositions(cx, branches, seed) {
       770+i*10,
     )
   })
+  // Layer 4: 82% along branches
   branches.forEach((b, i) => {
     addPos(
       quadAt(b.sx, b.cx, b.ex, 0.82) + (s(850+i)-0.5)*15,
@@ -119,15 +124,16 @@ function computeLeafPositions(cx, branches, seed) {
     )
   })
 
-  const canopyCy = 185
+  // Fill remaining with canopy scatter
+  const canopyCy = 200
   const remaining = 60 - positions.length
   const goldenAngle = Math.PI * (3 - Math.sqrt(5))
   for (let i = 0; i < remaining; i++) {
     const angle = i * goldenAngle + s(1000+i) * 0.3
-    const r = 30 + (i / Math.max(remaining, 1)) * 115 + s(1100+i) * 14
+    const r = 25 + (i / Math.max(remaining, 1)) * 100 + s(1100+i) * 14
     addPos(
       cx + Math.cos(angle) * r,
-      canopyCy + Math.sin(angle) * r * 0.72,
+      canopyCy + Math.sin(angle) * r * 0.65,
       1200+i*10,
     )
   }
@@ -182,6 +188,82 @@ function LeafShape({ x, y, color, rotation, scale, index, isNew, isScattering, t
   )
 }
 
+// ── Magical ambient elements ──
+
+function Fireflies({ seed, count }) {
+  const flies = useMemo(() => {
+    const s = (n) => seededRandom(seed + n)
+    return Array.from({ length: count }, (_, i) => ({
+      cx: 60 + s(i * 3) * 280,
+      cy: 80 + s(i * 3 + 1) * 250,
+      r: 1 + s(i * 3 + 2) * 1.2,
+      delay: s(i * 5) * 6,
+      dur: 3 + s(i * 7) * 4,
+      dx: 15 + s(i * 9) * 25,
+      dy: 10 + s(i * 11) * 20,
+    }))
+  }, [seed, count])
+
+  return (
+    <g className="fireflies-group">
+      {flies.map((f, i) => (
+        <circle key={i} cx={f.cx} cy={f.cy} r={f.r}
+          fill="#f5d06b" className="firefly-dot"
+          style={{
+            '--fly-dx': `${f.dx}px`,
+            '--fly-dy': `${f.dy}px`,
+            animationDelay: `${f.delay}s`,
+            animationDuration: `${f.dur}s`,
+          }}
+        />
+      ))}
+    </g>
+  )
+}
+
+function DappledLight({ seed }) {
+  const spots = useMemo(() => {
+    const s = (n) => seededRandom(seed + n + 5000)
+    return Array.from({ length: 6 }, (_, i) => ({
+      cx: 80 + s(i * 4) * 240,
+      cy: 100 + s(i * 4 + 1) * 200,
+      rx: 12 + s(i * 4 + 2) * 18,
+      ry: 8 + s(i * 4 + 3) * 14,
+      delay: s(i * 6) * 8,
+      dur: 5 + s(i * 8) * 6,
+    }))
+  }, [seed])
+
+  return (
+    <g className="dappled-light">
+      {spots.map((sp, i) => (
+        <ellipse key={i} cx={sp.cx} cy={sp.cy} rx={sp.rx} ry={sp.ry}
+          fill="rgba(255,248,220,0.06)" className="light-spot"
+          style={{ animationDelay: `${sp.delay}s`, animationDuration: `${sp.dur}s` }}
+        />
+      ))}
+    </g>
+  )
+}
+
+function FallingLeaf({ seed }) {
+  const s = (n) => seededRandom(seed + n + 9000)
+  const startX = 100 + s(0) * 200
+  const color = BASE_GREENS[Math.floor(s(1) * BASE_GREENS.length)]
+  const dur = 8 + s(2) * 6
+
+  return (
+    <g className="falling-leaf" style={{ animationDuration: `${dur}s` }}>
+      <path
+        d="M0,-5 C2.5,-4 4,-1.5 4,0.5 C4,3 2.5,5 0,6 C-2.5,5 -4,3 -4,0.5 C-4,-1.5 -2.5,-4 0,-5Z"
+        fill={color} opacity={0.5}
+        transform={`translate(${startX}, -10)`}
+        style={{ '--fall-x': `${startX}px` }}
+      />
+    </g>
+  )
+}
+
 // ── Main component ──
 
 export default function TreeCanvas({
@@ -191,35 +273,32 @@ export default function TreeCanvas({
   const tree = useMemo(() => generateTree(treeSeed), [treeSeed])
   const [selectedIdx, setSelectedIdx] = useState(null)
 
-  const baseLeaves = useMemo(() => {
-    const baseSlots = tree.leafPositions.slice(0, 30)
-    const indices = positionSeed > 0
-      ? seededShuffle([...Array(30).keys()], positionSeed + 7777)
-      : [...Array(30).keys()]
-
-    return indices.map((posIdx, i) => {
-      const pos = baseSlots[posIdx]
-      return {
-        x: pos.x, y: pos.y,
-        rotation: pos.rotation,
-        scale: pos.scale * 0.95,
-        color: BASE_GREENS[i % BASE_GREENS.length],
-      }
-    })
+  // TRUE shuffle: all 60 positions get shuffled together, then
+  // base greens take the first 30, emotion leaves take the rest
+  const allPositions = useMemo(() => {
+    if (positionSeed > 0) {
+      return seededShuffle(tree.leafPositions, positionSeed)
+    }
+    return tree.leafPositions
   }, [tree.leafPositions, positionSeed])
 
-  const positionedLeaves = useMemo(() => {
-    const emotionSlots = tree.leafPositions.slice(30, 60)
-    const indices = positionSeed > 0
-      ? seededShuffle([...Array(30).keys()], positionSeed)
-      : [...Array(30).keys()]
+  const baseLeaves = useMemo(() => {
+    const baseSlots = allPositions.slice(0, 30)
+    return baseSlots.map((pos, i) => ({
+      x: pos.x, y: pos.y,
+      rotation: pos.rotation,
+      scale: pos.scale * 0.95,
+      color: BASE_GREENS[i % BASE_GREENS.length],
+    }))
+  }, [allPositions])
 
+  const positionedLeaves = useMemo(() => {
+    const emotionSlots = allPositions.slice(30, 60)
     return leaves.map((leaf, i) => {
-      const posIdx = indices[i % 30]
-      const pos = emotionSlots[posIdx]
+      const pos = emotionSlots[i % 30]
       return { ...leaf, x: pos.x, y: pos.y, rotation: pos.rotation, scale: pos.scale }
     })
-  }, [leaves, tree.leafPositions, positionSeed])
+  }, [leaves, allPositions])
 
   const selected = selectedIdx !== null ? positionedLeaves[selectedIdx] : null
 
@@ -230,6 +309,9 @@ export default function TreeCanvas({
     tipY = selected.y - 55
     if (tipY < 5) tipY = selected.y + 25
   }
+
+  const leafCount = leaves.length
+  const fireflyCount = leafCount >= 20 ? 8 : leafCount >= 12 ? 5 : leafCount >= 5 ? 3 : 0
 
   return (
     <div className="tree-canvas-container">
@@ -252,20 +334,41 @@ export default function TreeCanvas({
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
           <radialGradient id="canopyGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#2a5a2a" stopOpacity={0.06 + leaves.length * 0.005} />
+            <stop offset="0%" stopColor="#2a5a2a" stopOpacity={0.06 + leafCount * 0.006} />
+            <stop offset="100%" stopColor="transparent" />
+          </radialGradient>
+          <radialGradient id="warmGlow" cx="50%" cy="30%" r="60%">
+            <stop offset="0%" stopColor="#fff8dc" stopOpacity={0.03 + leafCount * 0.002} />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
           <filter id="leafGlow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="3" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
+          <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" />
+          </filter>
         </defs>
 
+        {/* Warm ambient glow behind canopy */}
+        <ellipse cx={200} cy={180} rx={160} ry={140} fill="url(#warmGlow)" />
+
         {/* Canopy glow */}
-        <ellipse cx={200} cy={185} rx={155 + leaves.length * 1.2} ry={135 + leaves.length * 0.8} fill="url(#canopyGlow)" />
+        <ellipse cx={200} cy={190} rx={150 + leafCount * 1.2} ry={130 + leafCount * 0.8} fill="url(#canopyGlow)" />
+
+        {/* Dappled sunlight through leaves */}
+        {leafCount > 3 && <DappledLight seed={treeSeed} />}
 
         {/* Ground shadow */}
         <ellipse cx="200" cy="465" rx="120" ry="12" fill="url(#groundGrad)" />
+
+        {/* Ground grass tufts */}
+        <g opacity="0.25">
+          <path d="M130,468 Q128,458 132,448" stroke="#2d5a2d" strokeWidth="1.2" fill="none" />
+          <path d="M135,470 Q134,460 138,452" stroke="#2d5a2d" strokeWidth="1" fill="none" />
+          <path d="M265,469 Q267,459 263,449" stroke="#2d5a2d" strokeWidth="1.2" fill="none" />
+          <path d="M260,471 Q261,461 257,453" stroke="#2d5a2d" strokeWidth="1" fill="none" />
+        </g>
 
         {/* Roots */}
         {tree.roots.map((r, i) => (
@@ -327,16 +430,11 @@ export default function TreeCanvas({
           ))}
         </g>
 
-        {/* Fireflies */}
-        {leaves.length > 8 && (
-          <g>
-            {[...Array(3)].map((_, i) => (
-              <circle key={i} cx={90 + i * 110} cy={120 + i * 70} r={1.2}
-                fill="#f59e0b" opacity={0.2} className="firefly"
-                style={{ animationDelay: `${i * 1.5}s` }} />
-            ))}
-          </g>
-        )}
+        {/* Fireflies — more appear as tree grows */}
+        {fireflyCount > 0 && <Fireflies seed={treeSeed} count={fireflyCount} />}
+
+        {/* Falling leaf — gentle drift, appears on fuller trees */}
+        {leafCount >= 15 && <FallingLeaf seed={treeSeed + positionSeed} />}
 
         {/* Leaf detail tooltip */}
         {selected && (

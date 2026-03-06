@@ -2,6 +2,22 @@ import '../styles/ReleaseNotes.css'
 
 const RELEASES = [
   {
+    version: '1.3.0',
+    title: 'Magic & True Shuffle',
+    date: '2026-03-05',
+    items: [
+      { text: 'Tap a leaf to see its emotion, gratitude recipient, and note', bold: true },
+      { text: 'Desktop: hover to preview, mobile: tap to toggle' },
+      { text: 'True shuffle — rearrange now completely randomizes ALL leaf positions' },
+      { text: 'Shorter top branches for a denser, fuller canopy shape' },
+      { text: 'Fireflies scale with tree growth (3→5→8 as leaves increase)' },
+      { text: 'Dappled sunlight spots shimmer through the canopy' },
+      { text: 'Gentle falling leaf animation on trees with 15+ leaves' },
+      { text: 'Warm ambient glow behind the canopy' },
+      { text: 'Grass tufts at the base of the trunk' },
+    ],
+  },
+  {
     version: '1.2.0',
     title: 'Light Mode & Lush Canopy',
     date: '2026-03-04',
