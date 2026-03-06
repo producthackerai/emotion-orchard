@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { FloatingParticles, OrchardFireflies } from './AmbientParticles'
 import '../styles/OrchardView.css'
 
 function seededRandom(seed) {
@@ -140,6 +141,9 @@ function MiniTree({ tree, leafCount, leaves, onClick }) {
 export default function OrchardView({ trees, treeLeaveCounts, allLeaves = [], onSelectTree, onCreateTree }) {
   return (
     <div className="orchard-view">
+      <FloatingParticles count={10} seed={55} />
+      {trees.length > 0 && <OrchardFireflies count={4 + trees.length} seed={trees.length * 7} />}
+
       <div className="orchard-header">
         <h2 className="orchard-title">Your Orchard</h2>
         <p className="orchard-subtitle">{trees.length} tree{trees.length !== 1 ? 's' : ''} growing</p>

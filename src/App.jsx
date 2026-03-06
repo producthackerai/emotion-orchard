@@ -9,6 +9,7 @@ import ChatPage from './components/ChatPage'
 import FeedbackPage from './components/FeedbackPage'
 import SettingsPage from './components/SettingsPage'
 import ReleaseNotes from './components/ReleaseNotes'
+import { FloatingParticles } from './components/AmbientParticles'
 import { TreePine, Flower2, BarChart3, MessageCircle } from 'lucide-react'
 import './styles/App.css'
 
@@ -224,6 +225,10 @@ export default function App() {
       />
 
       <main className="app-main">
+        <div className="app-ambient">
+          <FloatingParticles count={8} seed={33} />
+        </div>
+
         {view === 'orchard' && (
           <OrchardView
             trees={trees}

@@ -16,6 +16,18 @@
   position: relative;
 }
 
+.app-main > * {
+  z-index: 1;
+}
+
+.app-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
 /* Loading */
 .app-loading {
   display: flex;

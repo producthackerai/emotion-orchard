@@ -194,28 +194,66 @@ function Fireflies({ seed, count }) {
   const flies = useMemo(() => {
     const s = (n) => seededRandom(seed + n)
     return Array.from({ length: count }, (_, i) => ({
-      cx: 60 + s(i * 3) * 280,
-      cy: 80 + s(i * 3 + 1) * 250,
-      r: 1 + s(i * 3 + 2) * 1.2,
+      cx: 55 + s(i * 3) * 290,
+      cy: 75 + s(i * 3 + 1) * 280,
+      r: 2.5 + s(i * 3 + 2) * 2.5,
       delay: s(i * 5) * 6,
       dur: 3 + s(i * 7) * 4,
-      dx: 15 + s(i * 9) * 25,
-      dy: 10 + s(i * 11) * 20,
+      dx: 15 + s(i * 9) * 30,
+      dy: 10 + s(i * 11) * 25,
     }))
   }, [seed, count])
 
   return (
     <g className="fireflies-group">
       {flies.map((f, i) => (
-        <circle key={i} cx={f.cx} cy={f.cy} r={f.r}
-          fill="#f5d06b" className="firefly-dot"
-          style={{
-            '--fly-dx': `${f.dx}px`,
-            '--fly-dy': `${f.dy}px`,
-            animationDelay: `${f.delay}s`,
-            animationDuration: `${f.dur}s`,
-          }}
-        />
+        <g key={i}>
+          {/* Glow halo */}
+          <circle cx={f.cx} cy={f.cy} r={f.r * 3}
+            fill="#fbbf24" opacity={0.08} className="firefly-dot"
+            style={{
+              '--fly-dx': `${f.dx}px`,
+              '--fly-dy': `${f.dy}px`,
+              animationDelay: `${f.delay}s`,
+              animationDuration: `${f.dur}s`,
+            }}
+          />
+          {/* Core */}
+          <circle cx={f.cx} cy={f.cy} r={f.r}
+            fill="#fbbf24" className="firefly-dot"
+            style={{
+              '--fly-dx': `${f.dx}px`,
+              '--fly-dy': `${f.dy}px`,
+              animationDelay: `${f.delay}s`,
+              animationDuration: `${f.dur}s`,
+            }}
+          />
+        </g>
+      ))}
+    </g>
+  )
+}
+
+function Sparkles({ seed, count }) {
+  const sparks = useMemo(() => {
+    const s = (n) => seededRandom(seed + n + 3000)
+    return Array.from({ length: count }, (_, i) => ({
+      cx: 50 + s(i * 3) * 300,
+      cy: 70 + s(i * 3 + 1) * 280,
+      delay: s(i * 5) * 10,
+      dur: 2 + s(i * 7) * 3,
+    }))
+  }, [seed, count])
+
+  return (
+    <g className="sparkles-group">
+      {sparks.map((sp, i) => (
+        <g key={i} className="sparkle" style={{ animationDelay: `${sp.delay}s`, animationDuration: `${sp.dur}s` }}>
+          <line x1={sp.cx - 4} y1={sp.cy} x2={sp.cx + 4} y2={sp.cy} stroke="#fff8dc" strokeWidth={1} opacity={0.6} />
+          <line x1={sp.cx} y1={sp.cy - 4} x2={sp.cx} y2={sp.cy + 4} stroke="#fff8dc" strokeWidth={1} opacity={0.6} />
+          <line x1={sp.cx - 2.5} y1={sp.cy - 2.5} x2={sp.cx + 2.5} y2={sp.cy + 2.5} stroke="#fff8dc" strokeWidth={0.7} opacity={0.4} />
+          <line x1={sp.cx + 2.5} y1={sp.cy - 2.5} x2={sp.cx - 2.5} y2={sp.cy + 2.5} stroke="#fff8dc" strokeWidth={0.7} opacity={0.4} />
+        </g>
       ))}
     </g>
   )
@@ -311,7 +349,8 @@ export default function TreeCanvas({
   }
 
   const leafCount = leaves.length
-  const fireflyCount = leafCount >= 20 ? 8 : leafCount >= 12 ? 5 : leafCount >= 5 ? 3 : 0
+  const fireflyCount = leafCount >= 20 ? 10 : leafCount >= 12 ? 7 : leafCount >= 5 ? 4 : 2
+  const sparkleCount = leafCount >= 15 ? 6 : leafCount >= 8 ? 3 : 0
 
   return (
     <div className="tree-canvas-container">
@@ -430,8 +469,11 @@ export default function TreeCanvas({
           ))}
         </g>
 
-        {/* Fireflies — more appear as tree grows */}
-        {fireflyCount > 0 && <Fireflies seed={treeSeed} count={fireflyCount} />}
+        {/* Fireflies — always present, more as tree grows */}
+        <Fireflies seed={treeSeed} count={fireflyCount} />
+
+        {/* Sparkles — twinkling stars through the canopy */}
+        {sparkleCount > 0 && <Sparkles seed={treeSeed} count={sparkleCount} />}
 
         {/* Falling leaf — gentle drift, appears on fuller trees */}
         {leafCount >= 15 && <FallingLeaf seed={treeSeed + positionSeed} />}
